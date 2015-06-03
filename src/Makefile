@@ -26,7 +26,6 @@ all install installdirs uninstall distprep:
 	$(MAKE) -C makefiles $@
 	$(MAKE) -C test/regress $@
 	$(MAKE) -C tools/fsync $@
-	$(MAKE) -C backend/utils/stat/libgpla $@
 
 install: install-local
 
@@ -61,7 +60,6 @@ clean:
 	$(MAKE) -C test/regress $@
 	$(MAKE) -C tools/fsync $@
 	$(MAKE) -C backend/libpq/bsafe_wrapper $@
-	$(MAKE) -C backend/utils/stat/libgpla $@
 
 distclean maintainer-clean:
 	$(MAKE) -C port $@
@@ -79,7 +77,6 @@ distclean maintainer-clean:
 	$(MAKE) -C test/regress $@
 	$(MAKE) -C tools/fsync $@
 	$(MAKE) -C backend/libpq/bsafe_wrapper $@
-	$(MAKE) -C backend/utils/stat/libgpla $@
 	rm -f Makefile.port Makefile.global
 
 
