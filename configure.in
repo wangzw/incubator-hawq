@@ -1001,10 +1001,7 @@ AC_CHECK_CURL([7.0.0])
 CFLAGS="$CFLAGS $CURL_CFLAGS"
 LIBS="$LIBS $CURL_LIBS"
 
-# Check for bzip2
-AC_SEARCH_LIBS(BZ2_bzDecompress, bz2)
-
-# Check for bzip2
+# Check for sigar
 AC_SEARCH_LIBS(sigar_open, sigar)
 
 # Check for net-snmp
