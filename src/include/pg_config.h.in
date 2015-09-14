@@ -331,6 +331,9 @@
 /* Define to 1 if you have the `wldap32' library (-lwldap32). */
 #undef HAVE_LIBWLDAP32
 
+/* Define to 1 if you have the 'quicklz' library. */
+#undef HAVE_QUICKLZ
+
 /* Define to 1 if you have the `z' library (-lz). */
 #undef HAVE_LIBZ
 

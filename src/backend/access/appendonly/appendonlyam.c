@@ -71,12 +71,14 @@
 #include "utils/syscache.h"
 #include "storage/freespace.h"
 #include "storage/smgr.h"
-#include "storage/quicklz1.h"
-#include "storage/quicklz3.h"
 #include "storage/gp_compress.h"
 #include "utils/builtins.h"
 #include "utils/guc.h"
 
+#ifdef HAVE_QUICKLZ
+#include <quicklz1.h>
+#include <quicklz3.h>
+#endif
 
 #ifdef HAVE_LIBZ
 #include <zlib.h>
@@ -815,6 +817,7 @@ AppendOnlyExecutorReadBlock_GetBlockInfo(
 	bool  						isUseSplitLen)
 {
 	int64 blockFirstRowNum = executorReadBlock->blockFirstRowNum;
+
 	if (!AppendOnlyStorageRead_GetBlockInfo(
 									storageRead,
 									&executorReadBlock->dataLen,

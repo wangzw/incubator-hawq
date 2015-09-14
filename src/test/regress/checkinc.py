@@ -69,6 +69,8 @@ fileset = {
     'winsock2.h':        [],
     'ws2tcpip.h':        [],
     'hdfs/hdfs.h': 		 [],
+    'quicklz1.h':	 [],
+    'quicklz3.h':	 [],
 }
 
 

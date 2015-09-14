@@ -28,8 +28,6 @@
 #include "nodes/makefuncs.h"
 #include "parser/parse_type.h"
 #include "storage/gp_compress.h"
-#include "storage/quicklz1.h"
-#include "storage/quicklz3.h"
 #include "utils/builtins.h"
 #include "utils/fmgroids.h"
 #include "utils/formatting.h"
@@ -39,11 +37,16 @@
 #include "utils/relcache.h"
 #include "utils/syscache.h"
 
+#ifdef HAVE_QUICKLZ
+#include <quicklz1.h>
+#include <quicklz3.h>
+#endif
+
 /* names we expect to see in ENCODING clauses */
 char *storage_directive_names[] = {"compresstype", "compresslevel",
 								   "blocksize", NULL};
 
-
+#ifdef HAVE_QUICKLZ
 /* Internal state for quicklz */
 typedef struct quicklz_state
 {
@@ -59,6 +62,7 @@ typedef struct quicklz_state
 	size_t (*compress_fn)(int level, const void *, char *, size_t, void *);
 	size_t (*decompress_fn)(int level, const char *, void *, void *);
 } quicklz_state;
+#endif
 
 /* Internal state for zlib */
 typedef struct zlib_state
@@ -207,6 +211,7 @@ callCompressionValidator(PGFunction func, char *comptype, int32 complevel,
 	(void)DirectFunctionCall1(func, PointerGetDatum(&sa));
 }
 
+#ifdef HAVE_QUICKLZ
 /*
  * quicklz helper function.
  */
@@ -391,6 +396,7 @@ quicklz_validator(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_VOID();
 }
+#endif
 
 Datum
 zlib_constructor(PG_FUNCTION_ARGS)

@@ -2,7 +2,6 @@ package com.pivotal.hawq.mapreduce.ao.io;
 
 import com.pivotal.hawq.mapreduce.HAWQException;
 import com.pivotal.hawq.mapreduce.ao.file.HAWQAOSplit;
-import com.pivotal.hawq.mapreduce.ao.util.CompressQuickLZ;
 import com.pivotal.hawq.mapreduce.ao.util.CompressZlib;
 import com.pivotal.hawq.mapreduce.util.HAWQConvertUtil;
 
@@ -213,7 +212,9 @@ public final class HAWQAOFileReader
 				if (compressType.equals("zlib"))
 					tempBytes = CompressZlib.decompress(tempBytes);
 				else if (compressType.equals("quicklz"))
-					tempBytes = CompressQuickLZ.decompress(tempBytes);
+				{
+					throw new IOException("compresstype quicklz is not supported anymore");
+				}
 				if (tempBytes.length != uncompressedLen)
 					throw new IOException("tempBytes.length != uncompressedLen");
 				System.arraycopy(tempBytes, 0, smallTuple_Varblock, 0,
@@ -244,7 +245,9 @@ public final class HAWQAOFileReader
 				if (compressType.equals("zlib"))
 					allbytes = CompressZlib.decompress(allbytes);
 				else if (compressType.equals("quicklz"))
-					allbytes = CompressQuickLZ.decompress(allbytes);
+				{
+					throw new IOException("compresstype quicklz is not supported anymore");
+				}
 				if (allbytes.length != uncompressedLen)
 					throw new IOException("allbytes.length != uncompressedLen");
 				overallByteLen = allbytes.length;

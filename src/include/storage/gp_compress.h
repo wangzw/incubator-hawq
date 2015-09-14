@@ -11,8 +11,11 @@
 #include "fmgr.h"
 
 #include "catalog/pg_compression.h"
-#include "storage/quicklz1.h"
-#include "storage/quicklz3.h"
+
+#ifdef HAVE_QUICKLZ
+#include <quicklz1.h>
+#include <quicklz3.h>
+#endif
 
 #ifdef HAVE_LIBZ
 #include <zlib.h>

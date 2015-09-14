@@ -8382,7 +8382,7 @@ CREATE TABLE orca.tmp_verd_s_pp_provtabs_agt_0015_extract1 (
     erstellt_am_135 timestamp(5) without time zone,
     erstellt_am_134 timestamp(5) without time zone
 )
-WITH (appendonly=true, compresstype=quicklz) DISTRIBUTED BY (uid136);
+WITH (appendonly=true, compresstype=zlib) DISTRIBUTED BY (uid136);
  set allow_system_table_mods="DML";
  UPDATE pg_class                                                                                                                                                                                     
  SET                                                                                                                                                                                                 

@@ -516,10 +516,24 @@ default_reloptions(Datum reloptions, bool validate, char relkind,
 		compresstype = values[5];
 
 		if (!compresstype_is_valid(compresstype))
-			ereport(ERROR,
-					(errcode(ERRCODE_UNDEFINED_OBJECT),
-					 errmsg("unknown compresstype \"%s\"", compresstype),
-					 errOmitLocation(true)));
+		{
+#ifndef HAVE_QUICKLZ
+		  if (strcmp(compresstype, "quicklz") == 0)
+		  {
+		    ereport(ERROR,
+		        (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+		         errmsg("compresstype \"%s\" is not supported anymore", compresstype),
+		         errOmitLocation(true)));
+		  }
+		  else
+#endif
+		  {
+		    ereport(ERROR,
+		        (errcode(ERRCODE_UNDEFINED_OBJECT),
+		         errmsg("unknown compresstype \"%s\"", compresstype),
+					   errOmitLocation(true)));
+		  }
+		}
 
 		if ((columnstore == RELSTORAGE_PARQUET) && (strcmp(compresstype, "snappy") != 0)
 				&& (strcmp(compresstype, "gzip") != 0)
@@ -601,23 +615,24 @@ default_reloptions(Datum reloptions, bool validate, char relkind,
 				compresstype = pstrdup(defaultParquetCompressor);
 		}
 
+#ifdef HAVE_QUICKLZ
 		if (compresstype && (pg_strcasecmp(compresstype, "quicklz") == 0) &&
-			(compresslevel != 1))
+		    (compresslevel != 1))
 		{
-			/* allow quicklz level 3 only if the debug guc is on */
-			if (!(compresslevel == 3 && Test_enable_broken_quicklz3))
-			{
-				if (validate)
-					ereport(ERROR,
-							(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-							 errmsg("compresslevel=%d is out of range for quicklz "
-									 "(should be 1)", compresslevel),
-											   errOmitLocation(true)));
+		  /* allow quicklz level 3 only if the debug guc is on */
+		  if (!(compresslevel == 3 && Test_enable_broken_quicklz3))
+		  {
+		    if (validate)
+		      ereport(ERROR,
+		          (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+		           errmsg("compresslevel=%d is out of range for quicklz "
+		               "(should be 1)", compresslevel),
+		               errOmitLocation(true)));
 
-				compresslevel = setDefaultCompressionLevel(compresstype);
-			}
+		      compresslevel = setDefaultCompressionLevel(compresstype);
+		  }
 		}
-		
+#endif
 		if (compresstype && (pg_strcasecmp(compresstype, "rle_type") == 0) &&
 			(compresslevel > 4))
 		{
