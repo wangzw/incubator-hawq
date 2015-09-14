@@ -408,6 +408,8 @@ _bitmap_xlog_insert_bitmapwords(XLogRecPtr lsn, XLogRecord *record)
 	Buffer lovBuffer;
 	Page lovPage;
 	BMLOVItem lovItem;
+
+    MemSet(&newWords, '\0', sizeof(newWords));
 	
 	xlrec = (xl_bm_bitmapwords *) XLogRecGetData(record);
 
@@ -907,6 +909,8 @@ bitmap_xlog_cleanup(void)
 		reln = XLogOpenRelation(action->bm_node);
 		if (!RelationIsValid(reln))
 			return;
+
+        MemSet(&newWords, '\0', sizeof(newWords));
 
 		// -------- MirroredLock ----------
 		MIRROREDLOCK_BUFMGR_LOCK;

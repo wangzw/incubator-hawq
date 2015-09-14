@@ -221,13 +221,13 @@ GetHost()
 		if (AF_INET == hostAddrIter->ai_family)
 		{
 			Assert(!foundV4 && "expected no more than one IPv4 address for host");
-			memcpy(&hostAddrV4, hostAddrIter->ai_addr->sa_data, sizeof(hostAddrV4));
+			memcpy(&hostAddrV4, hostAddrIter->ai_addr->sa_data, sizeof(hostAddrIter->ai_addr->sa_data)<sizeof(hostAddrV4)?sizeof(hostAddrIter->ai_addr->sa_data):sizeof(hostAddrV4));
 			foundV4 = true;
 		}
 		else if (AF_INET6 == hostAddrIter->ai_family)
 		{
 			Assert(!foundV6 && "expected no more than one IPv6 address for host");
-			memcpy(&hostAddrV6, hostAddrIter->ai_addr->sa_data, sizeof(hostAddrV6));
+			memcpy(&hostAddrV6, hostAddrIter->ai_addr->sa_data, sizeof(hostAddrIter->ai_addr->sa_data)<sizeof(hostAddrV6)?sizeof(hostAddrIter->ai_addr->sa_data):sizeof(hostAddrV6));
 			foundV6 = true;
 		}
 	}
@@ -291,10 +291,10 @@ FindMatchingIf()
 		{
 			char nicAddr[sizeof(hostAddrV4)];
 			char maskAddr[sizeof(hostAddrV4)];
-			(void) memcpy(nicAddr, ifa->ifa_addr->sa_data, sizeof(nicAddr));
-			(void) memcpy(maskAddr, ifa->ifa_netmask->sa_data, sizeof(maskAddr));
+			(void) memcpy(nicAddr, ifa->ifa_addr->sa_data, sizeof(ifa->ifa_addr->sa_data)<sizeof(nicAddr)?sizeof(ifa->ifa_addr->sa_data):sizeof(nicAddr));
+			(void) memcpy(maskAddr, ifa->ifa_netmask->sa_data,  sizeof(ifa->ifa_netmask->sa_data)<sizeof(maskAddr)?sizeof(ifa->ifa_netmask->sa_data):sizeof(maskAddr));
 
-			found = CompareIP((char*) &hostAddrV4, nicAddr, maskAddr, sizeof(hostAddrV4));
+			found = CompareIP((char*) &hostAddrV4, nicAddr, maskAddr, sizeof(ifa->ifa_addr->sa_data)<sizeof(hostAddrV4)?sizeof(ifa->ifa_addr->sa_data):sizeof(hostAddrV4));
 		}
 		else
 		{
@@ -302,10 +302,10 @@ FindMatchingIf()
 
 			char nicAddr[sizeof(hostAddrV6)];
 			char maskAddr[sizeof(hostAddrV6)];
-			(void) memcpy(nicAddr, ifa->ifa_addr->sa_data, sizeof(nicAddr));
-			(void) memcpy(maskAddr, ifa->ifa_netmask->sa_data, sizeof(maskAddr));
+			(void) memcpy(nicAddr, ifa->ifa_addr->sa_data, sizeof(ifa->ifa_addr->sa_data)<sizeof(nicAddr)?sizeof(ifa->ifa_addr->sa_data):sizeof(nicAddr));
+			(void) memcpy(maskAddr, ifa->ifa_netmask->sa_data, sizeof(ifa->ifa_netmask->sa_data)<sizeof(maskAddr)?sizeof(ifa->ifa_netmask->sa_data):sizeof(maskAddr));
 
-			found = CompareIP((char*) &hostAddrV6, nicAddr, maskAddr, sizeof(hostAddrV6));
+			found = CompareIP((char*) &hostAddrV6, nicAddr, maskAddr, sizeof(ifa->ifa_addr->sa_data)<sizeof(hostAddrV6)?sizeof(ifa->ifa_addr->sa_data):sizeof(hostAddrV6));
 		}
 
 		if (found)

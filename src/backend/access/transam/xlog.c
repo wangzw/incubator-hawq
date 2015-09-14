@@ -777,6 +777,8 @@ XLogInsert_Internal(RmgrId rmid, uint8 info, XLogRecData *rdata, TransactionId h
 	bool		isLogSwitch = (rmid == RM_XLOG_ID && info == XLOG_SWITCH);
 	bool		no_tran = (rmid == RM_XLOG_ID);
 
+	MemSet(&dtbuf_lsn, '\0', sizeof(dtbuf_lsn));
+
 	if (info & XLR_INFO_MASK)
 	{
 		if ((info & XLR_INFO_MASK) != XLOG_NO_TRAN)

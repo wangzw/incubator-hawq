@@ -908,8 +908,8 @@ ntuplestore_flush(NTupleStore *ts)
 void 
 ntuplestore_destroy(NTupleStore *ts)
 {
-	ntuplestore_cleanup(ts, true);
 	UnregisterXactCallbackOnce(XCallBack_NTS, (void *) ts);
+	ntuplestore_cleanup(ts, true);
 }
 
 NTupleStoreAccessor* 

@@ -860,7 +860,7 @@ dttofmtasc_replace(timestamp * ts, date dDate, int dow, struct tm * tm,
 int
 PGTYPEStimestamp_fmt_asc(timestamp * ts, char *output, int str_len, char *fmtstr)
 {
-	struct tm	tm;
+	struct tm	tm = { 0 };
 	fsec_t		fsec;
 	date		dDate;
 	int			dow;

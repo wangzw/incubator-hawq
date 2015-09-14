@@ -917,8 +917,8 @@ shareinput_reader_notifydone(void *ctxt, int share_id)
 	retry_write(pctxt->donefd, "z", 1);
 	Assert(rwsize == 1);
 
-	shareinput_clean_lk_ctxt(pctxt);
 	UnregisterXactCallbackOnce(XCallBack_ShareInput_FIFO, (void *) ctxt);
+	shareinput_clean_lk_ctxt(pctxt);
 }
 
 /*
@@ -981,8 +981,8 @@ shareinput_writer_waitdone(void *ctxt, int share_id, int nsharer_xslice)
 	elog(DEBUG1, "SISC WRITER (shareid=%d, slice=%d): Writer received all %d reader done notifications",
 			share_id, currentSliceId, nsharer_xslice - pctxt->zcnt);
 
-	shareinput_clean_lk_ctxt(ctxt);
 	UnregisterXactCallbackOnce(XCallBack_ShareInput_FIFO, (void *) ctxt);
+	shareinput_clean_lk_ctxt(ctxt);
 }
 
 void

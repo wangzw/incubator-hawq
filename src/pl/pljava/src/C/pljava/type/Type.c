@@ -144,7 +144,7 @@ Type Type_getCoerceOut(Type self, Type other)
 			return coercer;
 	}
 
-	if(funcId == InvalidOid)
+	if((fromOid == InvalidOid) || (toOid == InvalidOid))
 		/*
 		 * Binary compatible type. No need for a special coercer
 		 */

@@ -1791,7 +1791,7 @@ destroyConnHashTable(ConnHashTable *ht)
 			if (ht->cxt)
 				pfree(trash);
 			else
-				free(ht->table);
+				free(trash);
 		}
 	}
 

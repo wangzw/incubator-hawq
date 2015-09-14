@@ -3402,7 +3402,14 @@ main(int argc, char *argv[])
 		fprintf(stderr, "%s", authwarning);
 
 	/* Get directory specification used to start this executable */
-	strcpy(bin_dir, argv[0]);
+	if (strlen(argv[0]) >= MAXPGPATH)
+	{
+		fprintf(stderr, _("%s: Path for postgres is too long (maximum length is %d): \"%s\"\n"),
+		                progname, MAXPGPATH-1, argv[0]);
+		exit_nicely();
+	}
+	strncpy(bin_dir, argv[0], MAXPGPATH-1);
+	bin_dir[MAXPGPATH-1] = '\0';
 	get_parent_directory(bin_dir);
 
 	printf(_("\nSuccess. You can now start the database server using:\n\n"
