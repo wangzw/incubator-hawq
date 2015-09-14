@@ -772,6 +772,9 @@
    (--enable-connectemc) */
 #undef USE_CONNECTEMC
 
+/* Define to 1 to build with Pivotal Query Optimizer. (--enable-orca) */
+#undef USE_ORCA
+
 /* Define to 1 to build with debug_break capabilities. (--enable-debugbreak)
    */
 #undef USE_DEBUG_BREAK

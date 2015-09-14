@@ -181,6 +181,7 @@ static const char *assign_optimizer_log_failure(const char *newval,
 							bool doit, GucSource source);
 static const char *assign_optimizer_minidump(const char *newval,
 							bool doit, GucSource source);
+static bool assign_optimizer(bool newval, bool doit, GucSource source);
 static const char *assign_optimizer_cost_model(const char *newval,
                                                         bool doit, GucSource source);
 static const char *assign_min_error_statement(const char *newval, bool doit,
@@ -3466,7 +3467,11 @@ static struct config_bool ConfigureNamesBool[] =
 			NULL
 		},
 		&optimizer,
-		true, NULL, NULL
+#ifdef USE_ORCA
+		true, assign_optimizer, NULL
+#else
+		false, assign_optimizer, NULL
+#endif
 	},
 
 	{
@@ -13107,6 +13112,18 @@ assign_fips_mode(bool newval, bool doit, GucSource source)
 	return true;
 }
 
+assign_optimizer(bool newval, bool doit, GucSource source)
+{
+#ifndef USE_ORCA
+	if (newval)
+	{
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("Pivotal Query Optimizer not supported by this build")));
+	}
+#endif
+	return true;
+}
 
 static bool
 assign_stage_log_stats(bool newval, bool doit, GucSource source)

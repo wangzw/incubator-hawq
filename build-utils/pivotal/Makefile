@@ -181,7 +181,10 @@ linux_x86_64_CONFIGFLAGS=--enable-email --enable-snmp
 osx105_x86_CONFIGFLAGS=--enable-email --enable-snmp	
 osx106_x86_CONFIGFLAGS=--enable-email --enable-snmp
 
-BLD_CONFIGFLAGS=$($(BLD_ARCH)_CONFIGFLAGS)
+# add --enable-orca flag to enable orca
+ORCA_FLAG=
+# ORCA_FLAG=--enable-orca
+BLD_CONFIGFLAGS=$($(BLD_ARCH)_CONFIGFLAGS) $(ORCA_FLAG)
 
 CONFIGFLAGS=$(strip $(BLD_CONFIGFLAGS) --with-pgport=$(DEFPORT) --with-libedit-preferred $(TRACE_CFG_FLAG) $(BLD_DEPLOYMENT_SETTING)) 
 
@@ -1305,6 +1308,7 @@ endif
 	-cp -rp $(BLD_THIRDPARTY_BIN_DIR)/glider $(INSTLOC)/sbin/
 
 ifneq "$(BLD_GPDB_BUILDSET)" "partial"
+ifeq "$(ORCA_FLAG)" "--enable-orca" 
 	# Copy GP Optimizer libraries 
 	echo "Copying Orca libraries";
 	for b in libnaucrates libgpdbcost libgpopt; do \
@@ -1327,6 +1331,7 @@ ifneq "$(BLD_GPDB_BUILDSET)" "partial"
 	echo "Create GP Optimizer UDFs library";
 	rm -f $(INSTLOC)/lib/libgpoptudf.$(LDSFX);
 	g++ $(GPOPT_UDF_FLAGS) -L$(INSTLOC)/lib -lgpos -lnaucrates -lgpdbcost -lgpopt -o $(INSTLOC)/lib/libgpoptudf.$(LDSFX)  ./src/backend/gpopt/utils/funcs.o ;
+endif
 endif
 
 

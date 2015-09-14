@@ -20,6 +20,9 @@ include $(top_builddir)/build-utils/pivotal/releng.mk
 SUBDIRS = access bootstrap catalog parser commands executor foreign \
 	lib libpq gp_libpq_fe main nodes optimizer port postmaster regex \
 	rewrite storage tcop utils resourcemanager $(top_builddir)/src/timezone cdb
+ifeq ($(enable_orca),yes)
+SUBDIRS += gpopt
+endif
 
 include $(srcdir)/common.mk
 
@@ -53,12 +56,18 @@ LIBS := $(filter-out -lreadline -ledit -ltermcap -lncurses -lcurses, $(LIBS))
 LIBS := -lprotobuf -lboost_thread -lboost_system -lboost_date_time -lstdc++ -lhdfs3 -lgsasl $(LIBS)
 
 # adding orca libraries
+ifeq ($(enable_orca),yes)
 LIBS := $(LIBS) -L$(LIBGPOS)/$(OBJDIR_DEFAULT) -lgpos
 LIBS := $(LIBS) -L$(XERCES_LIBDIR) -lxerces-c-3.1
 LIBS := $(LIBS) -L$(OPTIMIZER)/libnaucrates/$(OBJDIR_DEFAULT) -lnaucrates
 LIBS := $(LIBS) -L$(OPTIMIZER)/libgpdbcost/$(OBJDIR_DEFAULT) -lgpdbcost
-LIBS := $(LIBS) -L$(OPTIMIZER)/libgpopt/$(OBJDIR_DEFAULT) -lgpopt -lpthread
+LIBS := $(LIBS) -L$(OPTIMIZER)/libgpopt/$(OBJDIR_DEFAULT) -lgpopt
 LIBS := $(LIBS) -L$(top_builddir)/src/backend/gpopt -ldxltranslators
+endif
+
+# HAWQ uses threads in the backend
+LIBS := $(LIBS) -lpthread
+
 JSONLIB = -ljson
 LIBS := $(LIBS) $(JSONLIB)
 
@@ -69,10 +78,7 @@ SNAPPYLIB = -lsnappy
 LIBS := $(LIBS) $(SNAPPYLIB)
 ##########################################################################
 
-all: submake-libpgport submake-libdxltranslators postgres $(POSTGRES_IMP)
-
-submake-libdxltranslators: 
-	$(MAKE) -C gpopt all
+all: submake-libpgport postgres $(POSTGRES_IMP)
 
 ifneq ($(PORTNAME), cygwin)
 ifneq ($(PORTNAME), win32)
@@ -282,9 +288,6 @@ endif
 ifeq ($(PORTNAME), win32)
 	rm -f postgres.dll postgres.def libpostgres.a $(WIN32RES)
 endif
-	find gpopt -name *.o | xargs rm -rf
-	find gpopt -name *.so | xargs rm -rf
-	find gpopt -name *.dylib | xargs rm -rf
 
 distclean: clean
 	rm -f port/tas.s port/dynloader.c port/pg_sema.c port/pg_shmem.c

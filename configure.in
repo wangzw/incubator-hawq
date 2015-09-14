@@ -549,6 +549,15 @@ AC_MSG_RESULT([checking whether to build with connectemc... $enable_connectemc])
 AC_SUBST(enable_connectemc)
 
 #
+# Enable Pivotal Query Optimizer
+#
+PGAC_ARG_BOOL(enable, orca, no, [  --enable-orca        enable Pivotal Query Optimizer],
+              [AC_DEFINE([USE_ORCA], 1,
+                         [Define to 1 to build with Pivotal Query Optimizer. (--enable-orca)])])
+AC_MSG_RESULT([enable_orca])
+AC_SUBST(enable_orca)
+
+#
 # Include directories
 #
 ac_save_IFS=$IFS

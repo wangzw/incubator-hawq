@@ -142,7 +142,7 @@ ignore: returning
 ignore: stats
 ignore: tablespace
 ignore: gpdiffcheck
-test: exttab1
+ignore: exttab1
 ignore: custom_format
 ignore: resource_queue
 ignore: gptokencheck
@@ -199,12 +199,12 @@ ignore: portals_updatable
 ignore: plpgsql_cache
 ignore: percentile
 ignore: resource_queue_function
-test: gp_optimizer
+ignore: gp_optimizer
 ignore: co_nestloop_idxscan
 ignore: madlib_array_ops
 test: madlib_svec_test
 test: agg_derived_win
-test: orca_udfs
+ignore: orca_udfs
 #
 # the following test needs some special filespace/tablespace.
 #

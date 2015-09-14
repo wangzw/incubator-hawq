@@ -46,9 +46,10 @@
 #include "cdb/cdbgang.h"
 #include "cdb/dispatcher.h"
 
-
+#ifdef USE_ORCA
 extern char *SzDXLPlan(Query *parse);
 extern StringInfo OptVersion();
+#endif
 
 typedef struct ExplainState
 {
@@ -82,9 +83,11 @@ ExplainOnePlan_internal(PlannedStmt *plannedstmt,
                         TupOutputState *tstate,
                         ExplainState   *es,bool isSequential);
 
+#ifdef USE_ORCA
 static void ExplainDXL(Query *query, ExplainStmt *stmt,
 							const char *queryString,
 							ParamListInfo params, TupOutputState *tstate);
+#endif
 
 static double elapsed_time(instr_time *starttime);
 static ErrorData *explain_defer_error(ExplainState *es);
@@ -203,7 +206,7 @@ ExplainResultDesc(ExplainStmt *stmt)
 	return tupdesc;
 }
 
-
+#ifdef USE_ORCA
 /*
  * ExplainDXL -
  *	  print out the execution plan for one Query in DXL format
@@ -286,7 +289,7 @@ ExplainDXL(Query *query, ExplainStmt *stmt, const char *queryString,
     }
     PG_END_TRY();
 }
-
+#endif
 
 /*
  * ExplainOneQuery -
@@ -298,11 +301,13 @@ ExplainOneQuery(Query *query, ExplainStmt *stmt, const char *queryString,
 {
 	PlannedStmt	*plan = NULL;
 
+#ifdef USE_ORCA
     if (stmt->dxl)
     {
     	ExplainDXL(query, stmt, queryString, params, tstate);
     	return;
     }
+#endif
 
 	/* planner will not cope with utility statements */
 	if (query->commandType == CMD_UTILITY)
@@ -762,6 +767,7 @@ ExplainOnePlan_internal(PlannedStmt *plannedstmt,
         appendStringInfoChar(buf, '\n');
     }
 
+#ifdef USE_ORCA
     /* Display optimizer status: either 'legacy query optimizer' or Orca version number */
     if (optimizer_explain_show_status)
     {
@@ -779,6 +785,7 @@ ExplainOnePlan_internal(PlannedStmt *plannedstmt,
 			pfree(str);
     	}
     }
+#endif
 
     /*
      * Display final elapsed time.

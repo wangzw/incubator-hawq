@@ -41,7 +41,7 @@ SELECT a, b, c FROM altable WHERE a = 12;
 ROLLBACK;
 ALTER TABLE altable ALTER COLUMN c SET NOT NULL;
 INSERT INTO altable(a, b) VALUES(13, '13');
-ERROR:  null value in column "c" violates not-null constraint  (seg7 localhost:40000 pid=87759)
+ERROR:  NULL value in column "c" violates not-null constraint (COptTasks.cpp:1294)
 ALTER TABLE altable ALTER COLUMN c DROP NOT NULL;
 INSERT INTO altable(a, b) VALUES(13, '13');
 SELECT a, b, c FROM altable WHERE a = 13;
@@ -56,31 +56,34 @@ ALTER TABLE altable DROP COLUMN b;
 SELECT a, c FROM altable;
  a  | c  
 ----+----
-  1 |  1
-  9 |  9
-  8 |  8
   3 |  3
-  2 |  2
- 10 | 10
-  5 |  5
   4 |  4
-  7 |  7
+  5 |  5
   6 |  6
+  7 |  7
+  8 |  8
+  9 |  9
+ 10 | 10
  11 |  9
+  1 |  1
+  2 |  2
  13 |   
 (12 rows)
 
 ALTER TABLE altable ADD CONSTRAINT c_check CHECK (c < 10);
-ERROR:  check constraint "c_check" is violated by some row  (seg0 localhost:40000 pid=87752)
+ERROR:  check constraint "c_check" is violated by some row  (seg2 smdw:40000 pid=12117)
 ALTER TABLE altable ADD CONSTRAINT c_check CHECK (c > 0);
 INSERT INTO altable(a, c) VALUES(0, -10);
-ERROR:  new row for relation "altable" violates check constraint "c_check"  (seg5 localhost:40000 pid=87757)
+ERROR:  One or more assertions failed
+DETAIL:  Check constraint c_check for table altable was violated
 ALTER TABLE altable DROP CONSTRAINT c_check;
 INSERT INTO altable(a, c) VALUES(0, -10);
 ALTER TABLE altable ALTER COLUMN c TYPE bigint;
 CREATE USER alt_user;
 NOTICE:  resource queue required -- using default resource queue "pg_default"
 CREATE TABLE altable_owner(a, b) AS VALUES(1, 10),(2,20);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column(s) named 'a' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 ALTER TABLE altable_owner OWNER to alt_user;
 SET ROLE alt_user;
 SELECT a, b FROM altable_owner;
@@ -113,6 +116,8 @@ ERROR:  Column oriented tables are deprecated. Not support it any more.
 DROP TABLE IF EXISTS tmp;
 NOTICE:  table "tmp" does not exist, skipping
 CREATE TABLE tmp (initial int4);
+NOTICE:  Table doesn't have 'DISTRIBUTED BY' clause -- Using column named 'initial' as the Greenplum Database data distribution key for this table.
+HINT:  The 'DISTRIBUTED BY' clause determines the distribution of data. Make sure column(s) chosen are the optimal data distribution key to minimize skew.
 COMMENT ON TABLE tmp_wrong IS 'table comment';
 ERROR:  relation "tmp_wrong" does not exist
 COMMENT ON TABLE tmp IS 'table comment';

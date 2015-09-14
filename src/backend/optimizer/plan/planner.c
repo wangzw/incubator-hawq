@@ -124,9 +124,10 @@ static void resource_negotiator(Query *parse, int cursorOptions,
 																		 ResourceNegotiatorResult** result);
 static PlannedStmt *standard_planner(Query *parse, int cursorOptions,
                                       ParamListInfo boundParams);
-
+#ifdef USE_ORCA
 // GP optimizer entry point
 extern PlannedStmt *PplstmtOptimize(Query *parse, bool *pfUnexpectedFailure);
+#endif
 
 typedef struct
 {
@@ -159,7 +160,7 @@ static void sort_canonical_gs_list(List *gs, int *p_nsets, Bitmapset ***p_sets);
 static Plan *pushdown_preliminary_limit(Plan *plan, Node *limitCount, int64 count_est, Node *limitOffset, int64 offset_est);
 bool is_dummy_plan(Plan *plan);
 
-
+#ifdef USE_ORCA
 /**
  * Logging of optimization outcome
  */
@@ -197,8 +198,9 @@ static void log_optimizer(PlannedStmt *plan, bool fUnexpectedFailure)
 		elog(LOG, "Planner produced plan :%d", fUnexpectedFailure);
 	}
 }
+#endif
 
-
+#ifdef USE_ORCA
 /**
  * Postprocessing of optimizer's plan
  */
@@ -226,8 +228,9 @@ static void postprocess_plan(PlannedStmt *plan)
 	globNew->subplans = plan->subplans;
 	(void) apply_shareinput_xslice(plan->planTree, globNew);
 }
+#endif
 
-
+#ifdef USE_ORCA
 /*
  * optimize query using the new optimizer
  */
@@ -254,7 +257,7 @@ optimize_query(Query *parse, ParamListInfo boundParams)
 
 	return result;
 }
-
+#endif
 
 /*****************************************************************************
  *
@@ -329,37 +332,39 @@ planner(Query *parse, int cursorOptions,
 	{
     if (resourceNegotiateDone)
     {
-      /**
-       * If the new optimizer is enabled, try that first. If it does not return a plan,
-       * then fall back to the planner.
-       * TODO: caragg 11/08/2013: Enable ORCA when running in utility mode (MPP-21841)
-       */
-      if (!ppResult->saResult.forbid_optimizer && optimizer &&
-        AmIMaster()&&
-        (GP_ROLE_UTILITY != Gp_role))
-      {
-        if (gp_log_optimization_time)
-        {
-          INSTR_TIME_SET_CURRENT(starttime);
-        }
-        START_MEMORY_ACCOUNT(MemoryAccounting_CreateAccount(0, MEMORY_OWNER_TYPE_Optimizer));
-        {
-          result = optimize_query(parse, boundParams);
-          if (ppResult->stmt && ppResult->stmt->intoPolicy && result && result->intoPolicy)
-          {
-            result->intoPolicy->bucketnum = ppResult->stmt->intoPolicy->bucketnum;
-          }
-        }
-        END_MEMORY_ACCOUNT();
+#ifdef USE_ORCA
+		/**
+		* If the new optimizer is enabled, try that first. If it does not return a plan,
+		* then fall back to the planner.
+		* TODO: caragg 11/08/2013: Enable ORCA when running in utility mode (MPP-21841)
+		*/
+		if (!ppResult->saResult.forbid_optimizer && optimizer
+				&& AmIMaster() && (GP_ROLE_UTILITY != Gp_role))
+		{
+			if (gp_log_optimization_time)
+			{
+				INSTR_TIME_SET_CURRENT(starttime);
+			}
+			START_MEMORY_ACCOUNT(MemoryAccounting_CreateAccount(0, MEMORY_OWNER_TYPE_Optimizer));
+			{
+				result = optimize_query(parse, boundParams);
+				if (ppResult->stmt && ppResult->stmt->intoPolicy
+						&& result && result->intoPolicy)
+				{
+					result->intoPolicy->bucketnum =
+							ppResult->stmt->intoPolicy->bucketnum;
+				}
+			}
+			END_MEMORY_ACCOUNT();
 
-        if (gp_log_optimization_time)
-        {
-          INSTR_TIME_SET_CURRENT(endtime);
-          INSTR_TIME_SUBTRACT(endtime, starttime);
-          elog(LOG, "Optimizer Time: %.3f ms", INSTR_TIME_GET_MILLISEC(endtime));
-        }
-
-      }
+			if (gp_log_optimization_time)
+			{
+				INSTR_TIME_SET_CURRENT(endtime);
+				INSTR_TIME_SUBTRACT(endtime, starttime);
+				elog(LOG, "Optimizer Time: %.3f ms", INSTR_TIME_GET_MILLISEC(endtime));
+			}
+		}
+#endif
 
       if (!result)
       {
