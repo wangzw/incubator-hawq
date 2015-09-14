@@ -768,10 +768,6 @@
 /* Define to 1 to build with Bonjour support. (--with-bonjour) */
 #undef USE_BONJOUR
 
-/* Define to 1 to build with connect emc alert capabilities.
-   (--enable-connectemc) */
-#undef USE_CONNECTEMC
-
 /* Define to 1 to build with Pivotal Query Optimizer. (--enable-orca) */
 #undef USE_ORCA
 

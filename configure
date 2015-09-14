@@ -721,7 +721,6 @@ with_tcl
 enable_thread_safety
 INCLUDES
 enable_orca
-enable_connectemc
 enable_email
 enable_gphdfs
 enable_snmp
@@ -831,7 +830,6 @@ enable_testutils
 enable_snmp
 enable_gphdfs
 enable_email
-enable_connectemc
 enable_orca
 enable_thread_safety
 enable_thread_safety_force
@@ -5030,40 +5028,6 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: checking whether to build with email...$enable_email" >&5
 $as_echo "checking whether to build with email...$enable_email" >&6; }
-
-
-#
-# --enable-connectemc enables connect emc support
-#
-
-pgac_args="$pgac_args enable_connectemc"
-
-# Check whether --enable-connectemc was given.
-if test "${enable_connectemc+set}" = set; then :
-  enableval=$enable_connectemc;
-  case $enableval in
-    yes)
-
-$as_echo "#define USE_CONNECTEMC 1" >>confdefs.h
-
-      ;;
-    no)
-      :
-      ;;
-    *)
-      as_fn_error $? "no argument expected for --enable-connectemc option" "$LINENO" 5
-      ;;
-  esac
-
-else
-  enable_connectemc=no
-
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: checking whether to build with connectemc... $enable_connectemc" >&5
-$as_echo "checking whether to build with connectemc... $enable_connectemc" >&6; }
-
 
 #
 # Enable Pivotal Query Optimizer

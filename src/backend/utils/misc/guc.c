@@ -86,10 +86,6 @@
 #include "cdb/memquota.h"
 #include "utils/vmem_tracker.h"
 
-#ifdef USE_CONNECTEMC
-#include "emcconnect/api.h"
-#endif
-
 #ifndef PG_KRB_SRVTAB
 #define PG_KRB_SRVTAB ""
 #endif
@@ -191,7 +187,7 @@ static const char *assign_gp_workfile_caching_loglevel(const char *newval,
 static const char *assign_gp_mdversioning_loglevel(const char *newval,
 		   bool doit, GucSource source);
 static const char *assign_gp_sessionstate_loglevel(const char *newval,
-						   bool doit, GucSource source);		   
+						   bool doit, GucSource source);
 static const char *assign_time_slice_report_level(const char *newval, bool doit,
 						   GucSource source);
 static const char *assign_deadlock_hazard_report_level(const char *newval, bool doit,
@@ -241,10 +237,6 @@ static const char *assign_debug_dtm_action_target(const char *newval,
 						bool doit, GucSource source);
 static const char *assign_gp_log_format(const char *value, bool doit,
 										GucSource source);
-
-#ifdef USE_CONNECTEMC
-static const char *assign_connectemc_mode(const char *newval, bool doit, GucSource source);
-#endif
 
 static bool dummy_autovac=false;
 static bool assign_autovacuum_warning(bool newval, bool doit, GucSource source);
@@ -484,11 +476,6 @@ char	   *gp_snmp_use_inform_or_trap;
 char       *gp_snmp_debug_log;
 #endif
 
-char	   *gp_connectemc_mode;
-#ifdef USE_CONNECTEMC
-EmcConnectModeType_t gp_emcconnect_transport;
-#endif
-
 /* The following GUC holds the default version for append-only tables */
 int	test_appendonly_version_default = AORelationVersion_GetLatest();
 
@@ -597,7 +584,7 @@ int gp_cancel_query_delay_time;
 /* partitioning GUC */
 bool gp_partitioning_dynamic_selection_log;
 int gp_max_partition_level;
- 
+
 /* Enable the SEGV/BUS/ILL signal handler that are async safe. */
 bool gp_crash_handler_async = false;
 
@@ -2182,7 +2169,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&gp_heap_require_relhasoids_match,
 		true, NULL, NULL
 	},
-	
+
 	{
 		{"debug_appendonly_rezero_quicklz_compress_scratch", PGC_USERSET, DEVELOPER_OPTIONS,
 		 gettext_noop("Zero the QuickLZ scratch buffer before each append-only block that is being compressed."),
@@ -2496,7 +2483,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_appendonly_print_append_block,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_appendonly_print_insert", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Print log messages for append-only insert."),
@@ -2607,7 +2594,7 @@ static struct config_bool ConfigureNamesBool[] =
          &Debug_querycontext_print,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_gp_relation_node_fetch_wait_for_debugging", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Wait for debugger attach for MPP-16395 RelationFetchGpRelationNodeForXLog issue."),
@@ -2667,7 +2654,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_persistent_bootstrap_print,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"Debug_bulk_load_bypass_wal", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Use new bulk load bypass WAL logic."),
@@ -2687,7 +2674,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_persistent_appendonly_commit_count_print,
 		true, NULL, NULL
 	},
-	
+
 	{
 		{"debug_cancel_print", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Print cancel detail information."),
@@ -2697,7 +2684,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_cancel_print,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_datumstream_write_print_small_varlena_info", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Print datum stream write small varlena information."),
@@ -2707,7 +2694,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_datumstream_write_print_small_varlena_info,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_datumstream_write_print_large_varlena_info", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Print datum stream write large varlena information."),
@@ -2717,7 +2704,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_datumstream_write_print_large_varlena_info,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_datumstream_read_check_large_varlena_integrity", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Check datum stream large object integrity."),
@@ -2727,7 +2714,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_datumstream_read_check_large_varlena_integrity,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_datumstream_block_read_check_integrity", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Check datum stream block read integrity."),
@@ -2737,7 +2724,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_datumstream_block_read_check_integrity,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_datumstream_block_write_check_integrity", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Check datum stream block write integrity."),
@@ -2747,7 +2734,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_datumstream_block_write_check_integrity,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_datumstream_read_print_varlena_info", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Print datum stream read varlena information."),
@@ -2757,7 +2744,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_datumstream_read_print_varlena_info,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_datumstream_write_use_small_initial_buffers", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Use small datum stream write buffers to stress growing logic."),
@@ -2767,7 +2754,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_datumstream_write_use_small_initial_buffers,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_database_command_print", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Print database command debugging information."),
@@ -2847,7 +2834,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_print_xlog_relation_change_info_backtrace_skip_issues,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"debug_check_for_invalid_persistent_tid", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("Check for invalid persistent TID"),
@@ -2857,7 +2844,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&Debug_check_for_invalid_persistent_tid,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"test_appendonly_override", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("For testing purposes, change the default of the appendonly create table option."),
@@ -2877,7 +2864,7 @@ static struct config_bool ConfigureNamesBool[] =
 			&Gohdb_appendonly_override,
 			true, NULL, NULL
 		},
-		
+
 	{
 		{"test_print_direct_dispatch_info", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("For testing purposes, print information about direct dispatch decisions."),
@@ -3129,7 +3116,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&gp_persistent_repair_global_sequence,
 		false, NULL, NULL
 	},
-		
+
 	{
 		{"filerep_crc_on", PGC_SUSET, DEVELOPER_OPTIONS,
 			gettext_noop("enable adler 32 crc in filerep"),
@@ -3513,7 +3500,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&optimizer_print_plan,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"optimizer_print_xform", PGC_USERSET, LOGGING_WHAT,
 			gettext_noop("Prints optimizer transformation information."),
@@ -3553,7 +3540,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&optimizer_disable_xform_result_printing,
 		false, NULL, NULL
 	},
- 
+
 	{
 		{"optimizer_print_memo_after_exploration", PGC_USERSET, LOGGING_WHAT,
 			gettext_noop("Print optimizer memo structure after the exploration phase."),
@@ -3622,7 +3609,7 @@ static struct config_bool ConfigureNamesBool[] =
 		},
 		&optimizer_print_optimization_context,
 		false, NULL, NULL
-	}, 
+	},
  	{
  		{"gp_reject_internal_tcp_connection", PGC_POSTMASTER,
 			DEVELOPER_OPTIONS,
@@ -3633,7 +3620,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&gp_reject_internal_tcp_conn,
 		true, NULL, NULL
 	},
-	
+
 	{
 		{"optimizer_print_optimization_stats", PGC_USERSET, LOGGING_WHAT,
 			gettext_noop("Print optimization stats."),
@@ -3643,7 +3630,7 @@ static struct config_bool ConfigureNamesBool[] =
  		&optimizer_print_optimization_stats,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"optimizer_parallel", PGC_USERSET, LOGGING_WHAT,
 			gettext_noop("Enable using threads in optimization engine."),
@@ -3934,7 +3921,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&optimizer_enumerate_plans,
 		false, NULL, NULL
 	},
- 
+
 	{
 		{"optimizer_sample_plans", PGC_USERSET, DEVELOPER_OPTIONS,
 			gettext_noop("Enable plan sampling"),
@@ -4023,7 +4010,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&optimizer_apply_left_outer_to_union_all_disregarding_stats,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"optimizer_enable_ctas", PGC_USERSET, DEVELOPER_OPTIONS,
 			gettext_noop("Enable CTAS plans in the optimizer"),
@@ -4063,7 +4050,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&optimizer_apply_left_outer_to_union_all_disregarding_stats,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"optimizer_enable_ctas", PGC_USERSET, DEVELOPER_OPTIONS,
 			gettext_noop("Enable CTAS plans in the optimizer"),
@@ -4243,7 +4230,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&optimizer_dml_triggers,
 		false, NULL, NULL
 	},
-	
+
 	{
 		{"optimizer_dml_constraints", PGC_USERSET, DEVELOPER_OPTIONS,
 			gettext_noop("Support DML with CHECK constraints and NOT NULL constraints."),
@@ -4277,8 +4264,8 @@ static struct config_bool ConfigureNamesBool[] =
 
 	{
 		{"gp_plpgsql_clear_cache_always", PGC_USERSET, DEVELOPER_OPTIONS,
-		 gettext_noop("Controls caching of plpgsql plans in session"), 
-		 NULL, 
+		 gettext_noop("Controls caching of plpgsql plans in session"),
+		 NULL,
 		 GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE | GUC_GPDB_ADDOPT
 		},
 		&gp_plpgsql_clear_cache_always,
@@ -4298,7 +4285,7 @@ static struct config_bool ConfigureNamesBool[] =
 	{
 		{"gp_enable_caql_logging", PGC_USERSET, DEVELOPER_OPTIONS,
 			gettext_noop("Enable caql logging."),
-		 NULL, 
+		 NULL,
 		 GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE
 		},
 		&gp_enable_caql_logging,
@@ -4314,7 +4301,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&pxf_enable_filter_pushdown,
 		true, NULL, NULL
 	},
-	
+
 	{
 		{"pxf_enable_locality_optimizations", PGC_USERSET, CUSTOM_OPTIONS,
 			gettext_noop("Enables locality optimizations between database segments and remote data fragments whenever possible."),
@@ -4333,7 +4320,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&pxf_enable_stat_collection,
 		true, NULL, NULL
 	},
-	
+
 	{
 		{"pxf_isilon", PGC_POSTMASTER, EXTERNAL_TABLES,
 			gettext_noop("Indicates whether Isilon is the target storage system."),
@@ -4343,7 +4330,7 @@ static struct config_bool ConfigureNamesBool[] =
 		&pxf_isilon,
 		false, NULL, NULL
     },
-	
+
 	{
 		{"pxf_service_singlecluster", PGC_POSTMASTER, EXTERNAL_TABLES,
 			gettext_noop("Indicates whether PXF runs on SingleCluster."),
@@ -4367,7 +4354,7 @@ static struct config_bool ConfigureNamesBool[] =
 	{
 		{"gp_disable_catalog_access_on_segment", PGC_USERSET, DEVELOPER_OPTIONS,
 		 gettext_noop("Disables non-builtin object access on segments"),
-		 NULL, 
+		 NULL,
 		 GUC_NO_SHOW_ALL | GUC_NOT_IN_SAMPLE | GUC_GPDB_ADDOPT
 		},
 		&gp_disable_catalog_access_on_segment,
@@ -5408,7 +5395,7 @@ static struct config_int ConfigureNamesInt[] =
 			GUC_UNIT_S
 		},
 		&gp_filerep_tcp_keepalives_idle,
-		60, 0, INT_MAX, NULL, NULL 
+		60, 0, INT_MAX, NULL, NULL
 	},
 
 	{
@@ -6166,7 +6153,7 @@ static struct config_int ConfigureNamesInt[] =
 			NULL,
 			GUC_SUPERUSER_ONLY| GUC_NOT_IN_SAMPLE
 		},
-		&gp_email_connect_timeout, 
+		&gp_email_connect_timeout,
 		15, 10, 120, NULL, NULL
 	},
 	{
@@ -6268,7 +6255,7 @@ static struct config_int ConfigureNamesInt[] =
 		&optimizer_segments,
 		0, 0, INT_MAX, NULL, NULL
 	},
-	
+
 	{
 		{"pxf_service_port", PGC_POSTMASTER, EXTERNAL_TABLES,
 			gettext_noop("PXF service port"),
@@ -6809,7 +6796,7 @@ static struct config_real ConfigureNamesReal[] =
 		&optimizer_cost_threshold,
 		0.0, 0.0, INT_MAX, NULL, NULL
 	},
-	
+
 	{
 		{"hawq_resourcemanager_segment_limit_core_use",PGC_POSTMASTER, RESOURCES_MGM,
 			gettext_noop("set number of cores can be used for HAWQ execution in one segment host"),
@@ -7822,18 +7809,6 @@ static struct config_string ConfigureNamesString[] =
 		"", NULL, NULL
 	},
 
-#endif
-
-#ifdef USE_CONNECTEMC
-	{
-		{"gp_connectemc_mode", PGC_POSTMASTER, LOGGING,
-			gettext_noop("control connectemc functionality"),
-			gettext_noop("If 'on' send connectemc messages and log them locally, if 'local' log connectemc message locally only, if 'remote' send connectemc messages only, if 'off', no connectemc messages"),
-			GUC_SUPERUSER_ONLY
-		},
-		&gp_connectemc_mode,
-		"on", assign_connectemc_mode, NULL
-	},
 #endif
 
 	/* for pljava */
@@ -10694,7 +10669,7 @@ SetPGVariableDispatch(const char *name, List *args, bool is_local)
 	StringInfoData buffer;
 	char	   *argstring = flatten_set_variable_args(name, args);
 
-	SetPGVariable(name, args, is_local);	
+	SetPGVariable(name, args, is_local);
 
 	if (Gp_role != GP_ROLE_DISPATCH || IsBootstrapProcessingMode())
 		return;
@@ -10710,21 +10685,21 @@ SetPGVariableDispatch(const char *name, List *args, bool is_local)
 		appendStringInfo(&buffer, "SET ");
 		if (is_local)
 			appendStringInfo(&buffer, "LOCAL ");
-	
+
 		appendStringInfo(&buffer, "%s TO ", name);
 	}
-	
+
 	foreach(l, args)
 	{
 		A_Const    *arg = (A_Const *) lfirst(l);
 		char	   *val;
-	
+
 		if (l != list_head(args))
 			appendStringInfo(&buffer, ", ");
-	
+
 		if (!IsA(arg, A_Const))
 			elog(ERROR, "unrecognized node type: %d", (int) nodeTag(arg));
-	
+
 		switch (nodeTag(&arg->val))
 		{
 			case T_Integer:
@@ -10736,17 +10711,17 @@ SetPGVariableDispatch(const char *name, List *args, bool is_local)
 				break;
 			case T_String:
 				val = strVal(&arg->val);
-	
+
 					/*
 					 * Plain string literal or identifier., quote it
 					 */
-	
+
 				if (val[0] != '\'')
 					appendStringInfo(&buffer, "'%s'",val);
 				else
 					appendStringInfo(&buffer, "%s",val);
-	
-	
+
+
 				break;
 			default:
 				elog(ERROR, "unrecognized node type: %d",
@@ -13349,45 +13324,6 @@ show_tcp_keepalives_count(void)
 	snprintf(nbuf, sizeof(nbuf), "%d", pq_getkeepalivescount(MyProcPort));
 	return nbuf;
 }
-
-#ifdef USE_CONNECTEMC
-static const char *
-assign_connectemc_mode(const char *newval, bool doit, GucSource source)
-{
-	if (pg_strcasecmp(newval, "on") == 0)
-	{
-		if (doit)
-		{
-			gp_emcconnect_transport = EMCCONNECT_MODE_TYPE_ON;
-		}
-	}
-	else if (pg_strcasecmp(newval, "local") == 0)
-	{
-		if (doit)
-		{
-			gp_emcconnect_transport = EMCCONNECT_MODE_TYPE_LOCAL;
-		}
-	}
-	else if (pg_strcasecmp(newval, "remote") == 0)
-	{
-		if (doit)
-		{
-			gp_emcconnect_transport = EMCCONNECT_MODE_TYPE_REMOTE;
-		}
-	}
-	else if (pg_strcasecmp(newval, "off") == 0)
-	{
-		if (doit)
-		{
-			gp_emcconnect_transport = EMCCONNECT_MODE_TYPE_OFF;
-		}
-	}
-	else
-		return NULL;			/* fail */
-	return newval;				/* OK */
-}
-#endif
-
 
 static const char *
 assign_debug_dtm_action(const char *newval,

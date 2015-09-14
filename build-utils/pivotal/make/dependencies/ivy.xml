@@ -34,7 +34,6 @@
       <dependency org="apache"          name="apr-util"        rev="1.2.12"         conf="osx106_x86->osx106_x86;rhel5_x86_64->rhel5_x86_64;suse10_x86_64->suse10_x86_64" />
       <dependency org="bzip"            name="bzip2"           rev="1.0.6"          conf="osx106_x86->osx106_x86;rhel5_x86_64->rhel5_x86_64;suse10_x86_64->suse10_x86_64" />
       <dependency org="cURL"            name="curl"            rev="7.21.7"         conf="osx106_x86->osx106_x86;rhel5_x86_64->rhel5_x86_64;suse10_x86_64->suse10_x86_64" />
-      <dependency org="emc"             name="emcconnect"      rev="1.1"            conf="rhel5_x86_64->rhel5_x86_64" />
       <dependency org="gnu"             name="gperf"           rev="3.0.4-1"        conf="osx106_x86->osx106_x86;rhel5_x86_64->rhel5_x86_64;suse10_x86_64->suse10_x86_64" />
       <dependency org="google"          name="protobuf"        rev="2.5.0"          conf="osx106_x86->osx106_x86;rhel5_x86_64->rhel5_x86_64;suse10_x86_64->suse10_x86_64" />
       <dependency org="libevent"        name="libevent"        rev="1.4.6"          conf="osx106_x86->osx106_x86;rhel5_x86_64->rhel5_x86_64;suse10_x86_64->suse10_x86_64" />
