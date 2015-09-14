@@ -26,10 +26,6 @@ ifeq ($(with_tcl), yes)
 DIRS += tcl
 endif
 
-ifeq ($(with_r), yes)
-DIRS += plr
-endif
-
 ifeq ($(with_java), yes)
 DIRS += pljava
 endif
