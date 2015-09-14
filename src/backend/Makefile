@@ -52,13 +52,6 @@ LIBS := $(filter-out -lpgport, $(LIBS)) $(LDAP_LIBS_BE) $(CONNECTEMCLIB)
 LIBS := $(filter-out -lreadline -ledit -ltermcap -lncurses -lcurses, $(LIBS))
 LIBS := -lprotobuf -lboost_thread -lboost_system -lboost_date_time -lstdc++ -lhdfs3 -lgsasl $(LIBS)
 
-# Add in the bsafe wrapper. This is only needed on platforms which support 
-# RSA BSAFE Crypto-C ME (Linux 64 bit, Mac 10.6 and Solaris)
-ifneq ($(RSA_BSAFE_DY_LIBS),)
-LIBS := $(LIBS) -L$(top_builddir)/src/backend/libpq/bsafe_wrapper \
-				-lbsafe_wrapper
-endif
-
 # adding orca libraries
 LIBS := $(LIBS) -L$(LIBGPOS)/$(OBJDIR_DEFAULT) -lgpos
 LIBS := $(LIBS) -L$(XERCES_LIBDIR) -lxerces-c-3.1
@@ -76,13 +69,10 @@ SNAPPYLIB = -lsnappy
 LIBS := $(LIBS) $(SNAPPYLIB)
 ##########################################################################
 
-all: submake-libpgport submake-libdxltranslators submake-libbsafe_wrapper submake-libgpla postgres $(POSTGRES_IMP)
+all: submake-libpgport submake-libdxltranslators submake-libgpla postgres $(POSTGRES_IMP)
 
 submake-libgpla:
 	$(MAKE) -C utils/stat/libgpla all
-
-submake-libbsafe_wrapper:
-	$(MAKE) -C libpq/bsafe_wrapper all
 	
 submake-libdxltranslators: 
 	$(MAKE) -C gpopt all

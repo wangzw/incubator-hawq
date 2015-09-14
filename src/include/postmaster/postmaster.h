@@ -15,6 +15,7 @@
 
 /* GUC options */
 extern bool EnableSSL;
+extern PGDLLIMPORT bool fips_mode;
 extern bool SilentMode;
 extern int	ReservedBackends;
 extern int	PostPortNumber;

@@ -40,6 +40,8 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 
+#include "postmaster/postmaster.h"
+
 /*
  * Max lengths we might want to handle.
  */
@@ -952,6 +954,12 @@ px_find_cipher(const char *name, PX_Cipher **res)
 	ossldata   *od;
 
 	name = px_resolve_alias(ossl_aliases, name);
+	if (fips_mode)
+	{
+		if (!strcmp(name, fips_crypto_algo_str))
+	 		return PXE_NOT_ALLOWED_FIPS;
+	}
+
 	for (i = ossl_cipher_types; i->name; i++)
 		if (!strcmp(i->name, name))
 			break;
@@ -961,6 +969,12 @@ px_find_cipher(const char *name, PX_Cipher **res)
 	od = px_alloc(sizeof(*od));
 	memset(od, 0, sizeof(*od));
 	od->ciph = i->ciph;
+
+	if (fips_mode)
+	{
+		if (!i->fips)
+			return PXE_NOT_ALLOWED_FIPS;
+	}
 
 	c = px_alloc(sizeof(*c));
 	c->block_size = gen_ossl_block_size;

@@ -214,6 +214,7 @@ static const char *assign_custom_variable_classes(const char *newval, bool doit,
 static const char *assign_explain_memory_verbosity(const char *newval, bool doit, GucSource source);
 static bool assign_debug_assertions(bool newval, bool doit, GucSource source);
 static bool assign_ssl(bool newval, bool doit, GucSource source);
+static bool assign_fips_mode(bool newval, bool doit, GucSource source);
 static bool assign_stage_log_stats(bool newval, bool doit, GucSource source);
 static bool assign_log_stats(bool newval, bool doit, GucSource source);
 static bool assign_dispatch_log_stats(bool newval, bool doit, GucSource source);
@@ -4434,6 +4435,15 @@ static struct config_bool ConfigureNamesBool[] =
 		},
 		&gp_enable_column_oriented_table,
 		false, NULL, NULL
+	},
+
+	{
+		{"fips_mode", PGC_POSTMASTER, CONN_AUTH_SECURITY,
+			gettext_noop("If set, enable OpenSSL FIPS Object Module, restricting allowed algorithms"),
+			NULL
+		},
+		&fips_mode,
+		false, assign_fips_mode, NULL
 	},
 
 	{
@@ -13053,6 +13063,50 @@ assign_ssl(bool newval, bool doit, GucSource source)
 #endif
 	return true;
 }
+
+static bool
+assign_fips_mode(bool newval, bool doit, GucSource source)
+{
+#ifndef USE_SSL
+	if (newval)
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("SSL is not supported by this build")));
+#else
+	/*
+	 * Put OpenSSL into FIPS mode. fips_mode is PGC_USERSET, but once entered,
+	 * there is actually no way of taking OpenSSL out of FIPS mode. So turning
+	 * it off doesn't do much. It does affect the allowed algorithms in
+	 * pgcrypto though.
+	 */
+	if (newval && doit)
+	{
+		if (!FIPS_mode_set(1))
+		{
+			unsigned long ssl_err = ERR_get_error();
+
+			/*
+			 * Give a more specific error message for the common case that
+			 * we're not linked with a FIPS-certified version of OpenSSL.
+			 */
+#ifdef CRYPTO_R_FIPS_MODE_NOT_SUPPORTED
+			if (ERR_GET_REASON(ssl_err) == CRYPTO_R_FIPS_MODE_NOT_SUPPORTED)
+				ereport(ERROR,
+						(errcode(ERRCODE_EXTERNAL_ROUTINE_INVOCATION_EXCEPTION),
+						 errmsg("FIPS mode is not supported by this version of OpenSSL")));
+			else
+#endif
+				ereport(ERROR,
+						(errcode(ERRCODE_EXTERNAL_ROUTINE_INVOCATION_EXCEPTION),
+						 errmsg("OpenSSL FIPS mode initialization failed"),
+						 errdetail("OpenSSL returned error %lx: %s",
+								   ssl_err, ERR_error_string(ssl_err, NULL))));
+		}
+	}
+#endif
+	return true;
+}
+
 
 static bool
 assign_stage_log_stats(bool newval, bool doit, GucSource source)
