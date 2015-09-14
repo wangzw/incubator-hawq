@@ -39,7 +39,7 @@ all : devel
 .PHONY : test2 test3
 
 # Internal functions which are invoked by other rules within this makefile
-.PHONY : groupSession mkgpfdist plr copydocs mgmtcopy copylibs
+.PHONY : groupSession mkgpfdist copydocs mgmtcopy copylibs
 .PHONY : greenplum_path RECONFIG HOMEDEP GPROOTDEP GPROOTDEP GPROOTFAIL goh
 .PHONY : version gccVersionCheck pygres authlibs clients loaders connectivity gppkg
 .PHONY : rmconf hawqconf
@@ -88,14 +88,12 @@ endif
 #---------------------------------------------------------------------
 GPMGMT=tools
 GPFDIST=src/bin/gpfdist
-PLR=src/pl/plr
 GPPERFMON=gpperfmon
 PLATFORM=platform
 BUILDDIR=$(BLD_TOP)
 
 RELEASE=$(shell $(BLD_TOP)/build-utils/pivotal/releasetag)
 GPDIR=greenplum-db$(RELEASE)
-PLRDIR=greenplum-plr$(RELEASE)
 CLIENTDIR=greenplum-clients$(RELEASE)
 CONNECTIVITYDIR=greenplum-connectivity$(RELEASE)
 LOADERSDIR=greenplum-loaders$(RELEASE)
@@ -364,7 +362,6 @@ define BUILD_STEPS
 	$(MAKE) -f $(this_makefile) greenplum_path INSTLOC=$(INSTLOC)
 	$(MAKE) -f $(this_makefile) goh INSTLOC=$(INSTLOC)
 	$(MAKE) -f $(this_makefile) groupSession INSTLOC=$(INSTLOC)
-	$(MAKE) -f $(this_makefile) plr
 	$(MAKE) -f $(this_makefile) mkgpfdist INSTCFLAGS=$(INSTCFLAGS)
 	$(MAKE) -f $(this_makefile) mgmtcopy INSTLOC=$(INSTLOC)
 	$(MAKE) -f $(this_makefile) mkplatform INSTLOC=$(INSTLOC)
@@ -1096,24 +1093,6 @@ groupSession:
 mkgpfdist:
 	@cd $(GPFDIST) && $(MAKE) OPT="$(INSTCFLAGS)"
 
-# In artifactory, we only have R for osx106_x86, rhel5_x86_64
-plr:
-ifneq "$(findstring $(BLD_ARCH),osx106_x86 rhel5_x86_64)" ""
-	@echo "Building plr project and creating tarball."
-	@cd $(PLR) && $(MAKE) R_HOME=$(R_HOME)
-	(cd $(PLR); \
-	rm -rf tmpdir; \
-	mkdir -p tmpdir/share/postgresql/contrib tmpdir/lib/postgresql \
-	tmpdir/R-2.13.0-1; \
-	cp plr.so tmpdir/lib/postgresql; \
-	cp plr.sql tmpdir/share/postgresql/contrib; \
-	tar -cf - -C $(R_HOME) . | tar -xpf - -C tmpdir/R-2.13.0-1; \
-	cp plr_install.sh tmpdir; \
-	tar -zcf $(BLD_TOP)/plr.tgz -C tmpdir .)
-else
-	@echo "INFO: plr is not built automatically on this platform"
-endif
-
 #mkgpperfmon:
 #	@cd $(GPPERFMON) && $(MAKE) BUILDDIR=$(BUILDDIR)
 #	cp -p gpperfmon/src/gpmon/gpmmon gpperfmon/src/gpmon/gpsmon $(INSTLOC)/bin
@@ -1523,7 +1502,6 @@ else
 GPPKG_SOURCES = \
 	contrib/pgcrypto \
 	src/pl/pljava \
-	src/pl/plr \
     $(NULL)
 	#contrib/postgis \
 	#src/pl/plperl \
