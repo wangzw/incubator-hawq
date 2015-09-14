@@ -69,11 +69,8 @@ SNAPPYLIB = -lsnappy
 LIBS := $(LIBS) $(SNAPPYLIB)
 ##########################################################################
 
-all: submake-libpgport submake-libdxltranslators submake-libgpla postgres $(POSTGRES_IMP)
+all: submake-libpgport submake-libdxltranslators postgres $(POSTGRES_IMP)
 
-submake-libgpla:
-	$(MAKE) -C utils/stat/libgpla all
-	
 submake-libdxltranslators: 
 	$(MAKE) -C gpopt all
 
