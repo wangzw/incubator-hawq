@@ -3,6 +3,7 @@
 *.ko
 *.obj
 *.elf
+.deps
 
 # Precompiled Headers
 *.gch
@@ -35,3 +36,15 @@
 *.obj
 *.elf
 
+# Eclipse Project
+.project
+.pydevproject
+
+# Generated files
+GNUmakefile
+config.log
+config.status
+VERSION
+env.sh
+ext/
+plr.tgz
