@@ -1353,7 +1353,7 @@ fi
 # Some versions of libedit contain strlcpy(); so disregard that library while
 # checking for these standard libc functions.
 pgac_save_LIBS="$LIBS"
-LIBS=`echo "$LIBS" | sed -e 's/-ledit//g' -e 's/-lreadline//g'`
+LIBS=`echo "$LIBS" | sed -e 's/-ledit//g' -e 's/-lreadline//g' -e 's/-lnetsnmp//g'`
 
 AC_REPLACE_FUNCS([crypt fseeko getopt getrusage inet_aton random rint srandom strdup strerror strlcat strlcpy strtol strtoul unsetenv])
 

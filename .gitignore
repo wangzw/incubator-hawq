@@ -48,3 +48,4 @@ VERSION
 env.sh
 ext/
 plr.tgz
+autom4te.cache/
