@@ -1,0 +1,8 @@
+#ifndef LIBYARNCONSTANTS_H_
+#define LIBYARNCONSTANTS_H_
+
+enum TimeInterval {
+	ALLOCATE_INTERVAL_MS =	1000 * 1000
+};
+
+#endif /* LIBYARNCONSTANTS_H_ */

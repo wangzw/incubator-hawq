@@ -1,0 +1,33 @@
+1. administration command
+(1) node add default|resource_0|resource_1
+(2) node remove sdw1
+(3) node get sdw1
+(4) node orderbymemory
+(5) node orderbycpu
+(6) resource summary
+(7) resource detail
+
+
+create job
+-> queue, jobname
+<- jobid, status
+
+finishk job
+-> jobid
+<- status
+
+allocate resource
+-> jobid, [hostname, memory, cpu]
+<- groupid, [id, hostname, memory, cpu, status]
+
+active resource
+-> jobid, groupid
+<- groupid, [id, hostname, memory, cpu, status]
+
+release resource
+-> jobid, groupid
+<- groupid, [id, hostname, memory, cpu, status]
+
+get cluster report
+-> nodestate 
+<- [hostname, state, rack, contianer_num, memory, cpu, healthReport, lastHealthReportTime] 

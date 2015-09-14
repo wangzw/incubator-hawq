@@ -1,0 +1,152 @@
+option py_generic_services = true;
+
+message JobContextProto
+{
+    optional string jobId = 1;
+    optional string jobName = 2;
+    optional string queue = 3;
+    optional string status = 4;
+}
+
+message ResourceProto
+{
+    optional string id = 1;
+    optional string hostname = 2;
+    optional int32 memory = 3;
+    optional int32 cpu = 4;
+    optional int32 status = 5;
+}
+
+message ResourceGroupProto
+{
+    optional string groupId = 1;
+    repeated ResourceProto resources = 2;
+}
+
+message NodeReportProto
+{
+    required string hostname = 1;
+    required string state = 2;
+    required string rack = 3;
+    required int32 container_num = 4;
+    required int32 memory = 5;
+    required int32 cpu = 6;
+    required string healthReport = 7;
+    required string lastHealthReportTime = 8;
+}
+
+enum NodeStateProto
+{
+    NEW = 1;
+    DECOMMISSIONED = 4;
+    LOST = 5;
+    REBOOTED = 6;
+}
+
+message ClusterReportProto
+{
+    repeated NodeReportProto nodes = 1;
+}
+
+message NodeResourceProto
+{
+    required string hostname = 1;
+    required string ip = 2;
+    required int32 min_memory = 3;
+    required int32 max_memory = 4;
+    required int32 free_memory = 5;
+    required int32 min_cpu = 6;
+    required int32 max_cpu = 7;
+    required int32 free_cpu = 8;
+
+}
+
+message ClusterResourceProto
+{
+    repeated NodeResourceProto nodes = 1;
+}
+
+message CreateJobRequestProto
+{
+    required JobContextProto jobContext = 1;    
+}
+
+message CreateJobResponseProto
+{
+    required JobContextProto jobContext = 1;    
+}
+
+message FinishJobRequestProto
+{
+    required JobContextProto jobContext = 1;    
+}
+
+message FinishJobResponseProto
+{
+    required JobContextProto jobContext = 1;    
+}
+
+message AllocateResourcesRequestProto
+{
+    required string jobId = 1;
+    required ResourceGroupProto resourceGroup = 2;    
+}
+
+message AllocateResourcesResponseProto
+{
+    required ResourceGroupProto resourceGroup = 1;    
+}
+
+message ActiveResourcesRequestProto
+{
+    required string jobId = 1;
+    required ResourceGroupProto resourceGroup = 2;    
+}
+
+message ActiveResourcesResponseProto
+{
+    required ResourceGroupProto resourceGroup = 1;    
+}
+
+message ReleaseResourcesRequestProto
+{
+    required string jobId = 1;
+    required ResourceGroupProto resourceGroup = 2;    
+}
+
+message ReleaseResourcesResponseProto
+{
+    required ResourceGroupProto resourceGroup = 1;    
+}
+
+message GetClusterReportRequestProto
+{
+    required NodeStateProto state = 1;    
+}
+
+message GetClusterReportResponseProto
+{
+    required ClusterReportProto report = 1;
+}
+
+message GetClusterResourceRequestProto
+{
+    required NodeStateProto state = 1;    
+}
+
+message GetClusterResourceResponseProto
+{
+    required ClusterResourceProto resources = 1;
+}
+service YarnSimulatorService
+{
+    rpc createJob(CreateJobRequestProto) returns(CreateJobResponseProto);
+    rpc finishJob(FinishJobRequestProto) returns(FinishJobResponseProto);
+    rpc allocateResources(AllocateResourcesRequestProto) returns(AllocateResourcesResponseProto);
+    rpc activeResources(ActiveResourcesRequestProto) returns(ActiveResourcesResponseProto);
+    rpc releaseResources(ReleaseResourcesRequestProto) returns(ReleaseResourcesResponseProto);
+    rpc getClusterReport(GetClusterReportRequestProto) returns(GetClusterReportResponseProto);
+    
+    // self define rpc interface
+    rpc getClusterResource(GetClusterResourceRequestProto) returns(GetClusterResourceResponseProto);
+}

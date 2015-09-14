@@ -1,0 +1,15 @@
+bin/diskqual.ksh
+bin/explain.pl
+bin/generate_load_tpch.pl
+bin/gpdebug
+bin/gpfaultinjector
+bin/gptorment.pl
+bin/gpverify
+bin/lib/gpgetconfig.py
+bin/lib/gpsnap.py
+bin/run_operator_tests.pl
+lib/python/gppylib/programs/clsInjectFault.py
+sbin/gprepairmirrorseg.py
+lib/postgresql/hawq-mr-io/hawq-mapreduce-ao-tests.jar
+lib/postgresql/hawq-mr-io/hawq-mapreduce-common-tests.jar
+lib/postgresql/hawq-mr-io/hawq-mapreduce-tool-tests.jar
