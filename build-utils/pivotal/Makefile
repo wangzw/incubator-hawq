@@ -1325,13 +1325,12 @@ ifeq "$(ORCA_FLAG)" "--enable-orca"
 	echo "Copy DXL translators library";	
 	cp $(BLD_TOP)/src/backend/gpopt/libdxltranslators.$(LDSFX) $(INSTLOC)/lib;
 
-	cd $(LIBSTDC++_LIBDIR); tar cvf - * | (cd $(INSTLOC)/lib; tar xfp -)
-
 	# Create GP Optimizer UDFs library  
 	echo "Create GP Optimizer UDFs library";
 	rm -f $(INSTLOC)/lib/libgpoptudf.$(LDSFX);
 	g++ $(GPOPT_UDF_FLAGS) -L$(INSTLOC)/lib -lgpos -lnaucrates -lgpdbcost -lgpopt -o $(INSTLOC)/lib/libgpoptudf.$(LDSFX)  ./src/backend/gpopt/utils/funcs.o ;
 endif
+	cd $(LIBSTDC++_LIBDIR); tar cvf - * | (cd $(INSTLOC)/lib; tar xfp -)
 endif
 
 
