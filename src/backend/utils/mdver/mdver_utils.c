@@ -73,12 +73,11 @@ mdver_request_version(Oid key, uint64 *ddl_version, uint64 *dml_version)
 	if (!mdver_enabled())
 	{
 		/*
-		 * MD Versioning feature is turned off. If any component is counting
-		 * on versions to be maintained, we give them a new version for each
-		 * request, to make sure they don't use stale data
+		 * MD Versioning feature is turned off. Return (1,0) as a fixed
+		 * version so that ORCA can check for equality etc.
 		 */
-		*ddl_version = mdver_next_global_version();
-		*dml_version = mdver_next_global_version();
+		*ddl_version = 1;
+		*dml_version = 0;
 		return;
 	}
 
