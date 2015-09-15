@@ -588,7 +588,7 @@ PACKAGE_BUGREPORT='support@greenplum.com'
 PACKAGE_URL=''
 
 ac_unique_file="src/backend/access/common/heaptuple.c"
-ac_default_prefix=/usr/local/pgsql
+ac_default_prefix=/usr/local/hawq
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -1507,7 +1507,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
 
-  --with-docdir=DIR       install the documentation in DIR [PREFIX/doc]
+  --with-docdir=DIR       install the documentation in DIR [PREFIX/docs]
   --without-docdir        do not install the documentation
   --with-includes=DIRS    look for additional header files in DIRS
   --with-libraries=DIRS   look for additional libraries in DIRS
@@ -2919,7 +2919,7 @@ if test "${with_docdir+set}" = set; then :
   esac
 
 else
-  docdir='${prefix}/doc'
+  docdir='${prefix}/docs'
 fi
 
 

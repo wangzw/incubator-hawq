@@ -16,7 +16,7 @@ all:
 	$(MAKE) -C contrib/gp_sparse_vector all
 #	$(MAKE) -C contrib/hawq-hadoop all
 	$(MAKE) -C contrib/gp_mdver all
-	@echo "All of Greenplum Database successfully made. Ready to install."
+	@echo "All of HAWQ successfully made. Ready to install."
 
 install: 
 #	$(MAKE) -C doc $@
@@ -26,7 +26,8 @@ install:
 	$(MAKE) -C contrib/gp_sparse_vector $@
 #	$(MAKE) -C contrib/hawq-hadoop $@
 	$(MAKE) -C contrib/gp_mdver $@
-	@echo "Greenplum Database installation complete."
+	$(MAKE) -C tools $@
+	@echo "HAWQ installation complete."
 
 installdirs uninstall:
 #	$(MAKE) -C doc $@

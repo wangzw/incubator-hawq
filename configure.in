@@ -27,7 +27,7 @@ dnl your responsibility whether the result works or not.])])
 AC_COPYRIGHT([Copyright (c) 1996-2010, PostgreSQL Global Development Group])
 AC_CONFIG_SRCDIR([src/backend/access/common/heaptuple.c])
 AC_CONFIG_AUX_DIR(config)
-AC_PREFIX_DEFAULT(/usr/local/pgsql)
+AC_PREFIX_DEFAULT(/usr/local/hawq)
 AC_SUBST(configure_args, [$ac_configure_args])
 
 AC_DEFINE_UNQUOTED(PG_VERSION, "$PACKAGE_VERSION", [Postgres version HAWQ is based on])
@@ -119,12 +119,12 @@ tas_file=dummy.s
 #
 # Installation directory for documentation
 #
-PGAC_ARG(with, docdir, [  --with-docdir=DIR       install the documentation in DIR [[PREFIX/doc]]
+PGAC_ARG(with, docdir, [  --with-docdir=DIR       install the documentation in DIR [[PREFIX/docs]]
   --without-docdir        do not install the documentation],
          [AC_MSG_ERROR([option --with-docdir requires an argument])],
          [docdir=],
          [docdir=$withval],
-         [docdir='${prefix}/doc'])
+         [docdir='${prefix}/docs'])
 AC_SUBST(docdir)
 
 

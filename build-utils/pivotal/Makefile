@@ -1339,14 +1339,6 @@ greenplum_path:
 	unset LIBPATH; \
 	  $(BLD_TOP)/build-utils/pivotal/generate-greenplum-path.sh $(INSTLOC) > $(INSTLOC)/greenplum_path.sh
 
-goh:
-	mkdir -p $(INSTLOC)/etc
-	cp -rp $(BLD_TOP)/build-utils/pivotal/goh/etc/* $(INSTLOC)/etc/
-
-rmconf:
-	mkdir -p $(INSTLOC)/etc
-	cp -rp src/backend/resourcemanager/etc/* $(INSTLOC)/etc/
-
 hawqconf:
 	mkdir -p $(INSTLOC)/etc
 	cp -rp src/backend/utils/misc/etc/* $(INSTLOC)/etc/

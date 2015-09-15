@@ -6,6 +6,10 @@ BLD_TOP=../../..
 include $(BLD_TOP)/build-utils/pivotal/Makefile.global
 include $(BLD_TOP)/build-utils/pivotal/Makefile.thirdparty
 
+subdir = src/bin/gpfdist
+top_builddir = ../../..
+include $(top_builddir)/src/Makefile.global
+
 # NO_M64 set in Makefile.global turns off default to 64-bit
 # here, select bitness we desire this build for gcc and ld
 CC=$(strip $(BLD_CC) $(BLD_CFLAGS))
@@ -102,3 +106,12 @@ clean:
 	rm -f src/gpfdist/gpfdist
 	rm -rf src/build
 	find src -name '*.o' -exec rm -f {} \;
+
+install:
+	${INSTALL_SCRIPT} -d ${bindir}
+	@for file in `find build/bin -type f`; \
+		do \
+			echo install $${file} into ${bindir};\
+			${INSTALL_SCRIPT} $${file} ${bindir}; \
+		done
+

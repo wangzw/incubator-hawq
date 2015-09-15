@@ -78,6 +78,7 @@ exec_prefix := @exec_prefix@
 datarootdir := @datarootdir@
 
 bindir := @bindir@
+sbindir := @sbindir@
 
 datadir := @datadir@
 ifeq "$(findstring pgsql, $(datadir))" ""
@@ -87,11 +88,11 @@ endif
 endif
 
 sysconfdir := @sysconfdir@
-ifeq "$(findstring pgsql, $(sysconfdir))" ""
-ifeq "$(findstring postgres, $(sysconfdir))" ""
-override sysconfdir := $(sysconfdir)/postgresql
-endif
-endif
+#ifeq "$(findstring pgsql, $(sysconfdir))" ""
+#ifeq "$(findstring postgres, $(sysconfdir))" ""
+#override sysconfdir := $(sysconfdir)/postgresql
+#endif
+#endif
 
 libdir := @libdir@
 
@@ -114,11 +115,11 @@ endif
 mandir := @mandir@
 
 docdir := @docdir@
-ifeq "$(findstring pgsql, $(docdir))" ""
-ifeq "$(findstring postgres, $(docdir))" ""
-override docdir := $(docdir)/postgresql
-endif
-endif
+#ifeq "$(findstring pgsql, $(docdir))" ""
+#ifeq "$(findstring postgres, $(docdir))" ""
+#override docdir := $(docdir)/postgresql
+#endif
+#endif
 
 htmldir := @htmldir@
 
