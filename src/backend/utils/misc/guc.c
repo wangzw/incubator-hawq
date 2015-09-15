@@ -13112,6 +13112,7 @@ assign_fips_mode(bool newval, bool doit, GucSource source)
 	return true;
 }
 
+static bool
 assign_optimizer(bool newval, bool doit, GucSource source)
 {
 #ifndef USE_ORCA
