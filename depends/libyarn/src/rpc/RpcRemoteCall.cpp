@@ -51,7 +51,10 @@ std::vector<char> RpcRemoteCall::GetPingRequest(const std::string & clientid) {
     pingHeader.set_retrycount(INVALID_RETRY_COUNT);
     pingHeader.set_rpckind(hadoop::common::RpcKindProto::RPC_PROTOCOL_BUFFER);
     pingHeader.set_rpcop(hadoop::common::RpcRequestHeaderProto_OperationProto_RPC_FINAL_PACKET);
-    buffer.writeVarint32(pingHeader.ByteSize());
+    int rpcHeaderLen = pingHeader.ByteSize();
+    int size = CodedOutputStream::VarintSize32(rpcHeaderLen) + rpcHeaderLen;
+    buffer.writeBigEndian(size);
+    buffer.writeVarint32(rpcHeaderLen);
     pingHeader.SerializeWithCachedSizesToArray(reinterpret_cast<unsigned char *>(buffer.alloc(pingHeader.ByteSize())));
     retval.resize(buffer.getDataSize(0));
     memcpy(&retval[0], buffer.getBuffer(0), retval.size());

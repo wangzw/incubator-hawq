@@ -39,16 +39,26 @@ extern "C" {
 			}
 
 			int createJob(string &jobName, string &queue,string &jobId) {
-				return client->createJob(jobName, queue,jobId);
+				return client->createJob(jobName, queue, jobId);
 			}
 
-			int allocateResources(string &jobId,ResourceRequest &resRequest,
-							list<string> &blackListAdditions,
-							list<string> &blackListRemovals,
-							list<Container> &allocatedContainers,
-							int retryLimit) {
-				return client->allocateResources(jobId, resRequest,
-						blackListAdditions, blackListRemovals,allocatedContainers,retryLimit);
+			int addContainerRequests(string &jobId,
+									Resource &capability,
+									int num_containers,
+									list<struct LibYarnNodeInfo> &preferred,
+									int priority,
+									bool relax_locality) {
+				return client->addContainerRequests(jobId, capability, num_containers,
+								preferred, priority, relax_locality);
+			}
+
+			int allocateResources(string &jobId,
+								  list<string> &blackListAdditions,
+								  list<string> &blackListRemovals,
+								  list<Container> &allocatedContainers,
+								  int32_t num_containers) {
+				return client->allocateResources(jobId, blackListAdditions, blackListRemovals,
+								allocatedContainers, num_containers);
 			}
 
 			int activeResources(string &jobId,int activeContainerIds[],int activeContainerSize) {
@@ -80,12 +90,10 @@ extern "C" {
 				return client->getContainerStatuses(jobId, containerIds, containerSize,containerStatues);
 			}
 
-
 			int getQueueInfo(string &queue, bool includeApps,
 							bool includeChildQueues, bool recursive,QueueInfo &queueInfo) {
 				return client->getQueueInfo(queue, includeApps, includeChildQueues,recursive,queueInfo);
 			}
-
 
 			int getClusterNodes(list<NodeState> &states,list<NodeReport> &nodeReports) {
 				return client->getClusterNodes(states,nodeReports);
@@ -135,105 +143,178 @@ extern "C" {
 		string jobNameStr(jobName);
 		string queueStr(queue);
 		string jobIdStr;
-		if (*jobId == NULL){
-				jobIdStr = "";
-		}else{
-				jobIdStr = *jobId;
+		if (*jobId == NULL) {
+			jobIdStr = "";
+		} else{
+			jobIdStr = *jobId;
 		}
 		int result = client->createJob(jobNameStr,queueStr,jobIdStr);
 		if (result == FUNCTION_SUCCEEDED){
-				*jobId = strdup(jobIdStr.c_str());
-				return FUNCTION_SUCCEEDED;
+			*jobId = strdup(jobIdStr.c_str());
+			return FUNCTION_SUCCEEDED;
 		}else{
-				*jobId = strdup(jobIdStr.c_str());
-				setErrorMessage(client->getErrorMessage());
-				return FUNCTION_FAILED;
+			*jobId = strdup(jobIdStr.c_str());
+			setErrorMessage(client->getErrorMessage());
+			return FUNCTION_FAILED;
 		}
 	}
 
 	int allocateResources(LibYarnClient_t *client, char *jobId,
-						LibYarnResourceRequest_t *resRequest,
+						int32_t priority, int32_t vCores, int32_t memory, int32_t num_containers,
 						char *blackListAdditions[], int blacklistAddsSize,
 						char *blackListRemovals[], int blackListRemovalsSize,
-						LibYarnResource_t **allocatedResourcesArray, int *allocatedResourceArraySize,
-						int retryLimit) {
-
-		//jobIdCpp
-		string jobIdCpp(jobId);
-
-		//2. resRequestCpp
-		ResourceRequest resRequestCpp;
-
+						LibYarnNodeInfo_t preferredHosts[], int preferredHostSize,
+						LibYarnResource_t **allocatedResourcesArray, int *allocatedResourceArraySize) {
+		int i = 0;
+		int totalPreferred = 0;
+		string jobIdStr(jobId);
+		list<string> blackListAdditionsList;
+		list<string> blackListRemovalsList;
+		list<Container> allocatedPreferredList;
+		list<Container> allocatedAnyList;
 		Resource capability;
-		capability.setVirtualCores(resRequest->vCores);
-		capability.setMemory(resRequest->memory);
-		resRequestCpp.setCapability(capability);
+		LibYarnResource_t *allAllocatedArray = NULL;
+		LibYarnResource_t *preferredAllocatedArray = NULL;
+		int preferredAllocatedSize = 0;
+		int anyAllocatedSize = 0;
 
-		resRequestCpp.setNumContainers(resRequest->num_containers);
+		capability.setVirtualCores(vCores);
+		capability.setMemory(memory);
 
-		Priority priority;
-		priority.setPriority(resRequest->priority);
-		resRequestCpp.setPriority(priority);
-
-		resRequestCpp.setRelaxLocality(resRequest->relax_locality);
-
-		string resourceName(resRequest->host);
-		resRequestCpp.setResourceName(resourceName);
-
-		//3. blackListAdditions
-		list<string> blackListAdditionsCpp;
-		for (int i = 0; i < blacklistAddsSize; i++) {
-				string tmp(blackListAdditions[i]);
-				blackListAdditionsCpp.push_back(tmp);
+		list<LibYarnNodeInfo> preferredHostsList;
+		if (preferredHosts != NULL && preferredHostSize > 0) {
+			for (i = 0; i < preferredHostSize; i++) {
+				LibYarnNodeInfo *info = new LibYarnNodeInfo(preferredHosts[i].hostname,
+															preferredHosts[i].rackname,
+															preferredHosts[i].num_containers);
+				preferredHostsList.push_back(*info);
+				totalPreferred += preferredHosts[i].num_containers;
+			}
 		}
 
-		//4. blackListRemovalsCpp
-		list<string> blackListRemovalsCpp;
-		for (int i = 0; i < blackListRemovalsSize; i++) {
-				string tmp(blackListRemovals[i]);
-				blackListRemovalsCpp.push_back(tmp);
+		/* generate some resource requests and store them into a list. */
+		int result = client->addContainerRequests(jobIdStr, capability,
+												  (preferredHosts != NULL && preferredHostSize > 0)?totalPreferred:num_containers,
+												  preferredHostsList, priority,
+												  (preferredHosts != NULL && preferredHostSize > 0)?false:true);
+		if (result != FUNCTION_SUCCEEDED)
+			goto exit_err;
+
+		for (i = 0; i < blacklistAddsSize; i++) {
+			string tmp(blackListAdditions[i]);
+			blackListAdditionsList.push_back(tmp);
 		}
 
-		list<Container> allocatedContainers;
-		int result = client->allocateResources(jobIdCpp,
-						resRequestCpp, blackListAdditionsCpp,
-						blackListRemovalsCpp,allocatedContainers,retryLimit);
-
-		if (result == FUNCTION_SUCCEEDED){
-				*allocatedResourceArraySize = allocatedContainers.size();
-				*allocatedResourcesArray = (LibYarnResource_t *)malloc(sizeof(LibYarnResource_t) * (*allocatedResourceArraySize));
-				int i = 0;
-				for (list<Container>::iterator it = allocatedContainers.begin(); it != allocatedContainers.end(); it++) {
-						(*allocatedResourcesArray)[i].containerId = it->getId().getId();
-						(*allocatedResourcesArray)[i].host = strdup(it->getNodeId().getHost().c_str());
-						(*allocatedResourcesArray)[i].port = it->getNodeId().getPort();
-						(*allocatedResourcesArray)[i].vCores = it->getResource().getVirtualCores();
-						(*allocatedResourcesArray)[i].memory = it->getResource().getMemory();
-						(*allocatedResourcesArray)[i].nodeHttpAddress = strdup(it->getNodeHttpAddress().c_str());
-						i++;
-				}
-				return FUNCTION_SUCCEEDED;
-		}else{
-				setErrorMessage(client->getErrorMessage());
-				return FUNCTION_FAILED;
+		for (i = 0; i < blackListRemovalsSize; i++) {
+			string tmp(blackListRemovals[i]);
+			blackListRemovalsList.push_back(tmp);
 		}
+
+		/*
+		 * If the total requested container number is larger than the container number of preferred hosts,
+		 * it'll request containers twice from YARN:
+		 * The first is for two cases:
+		 * 1. The requests don't have any preferred host request(all the requests is for ANY),
+		 * 2. The requests are all for preferred hosts.
+		 */
+		result = client->allocateResources(jobIdStr, blackListAdditionsList, blackListRemovalsList,
+				allocatedPreferredList, (preferredHosts != NULL && preferredHostSize)> 0?totalPreferred:num_containers);
+		if (result != FUNCTION_SUCCEEDED)
+			goto exit_err;
+
+		preferredAllocatedSize = allocatedPreferredList.size();
+		preferredAllocatedArray = (LibYarnResource_t *)malloc(sizeof(LibYarnResource_t) * preferredAllocatedSize);
+		if(preferredAllocatedArray == NULL) {
+			setErrorMessage("LibYarnClientC::fail to allocate memory for resource array");
+			goto exit_err;
+		}
+
+		i = 0;
+		for (list<Container>::iterator it = allocatedPreferredList.begin(); it != allocatedPreferredList.end(); it++) {
+			preferredAllocatedArray[i].containerId = it->getId().getId();
+			preferredAllocatedArray[i].host = strdup(it->getNodeId().getHost().c_str());
+			preferredAllocatedArray[i].port = it->getNodeId().getPort();
+			preferredAllocatedArray[i].vCores = it->getResource().getVirtualCores();
+			preferredAllocatedArray[i].memory = it->getResource().getMemory();
+			preferredAllocatedArray[i].nodeHttpAddress = strdup(it->getNodeHttpAddress().c_str());
+			i++;
+		}
+
+		if (preferredHostsList.size() > 0 && num_containers-totalPreferred > 0) {
+			/*
+			 * The second is for ANY, except preferred host.
+			 * add remain requests for ANY, relax_locality is true.
+			 * */
+			result = client->addContainerRequests(jobIdStr, capability, num_containers-totalPreferred,
+												  preferredHostsList, priority, true);
+			if (result != FUNCTION_SUCCEEDED) {
+				goto exit_part;
+			}
+
+			result = client->allocateResources(jobIdStr, blackListAdditionsList, blackListRemovalsList,
+									allocatedAnyList, num_containers-totalPreferred);
+			if (result != FUNCTION_SUCCEEDED)
+				goto exit_part;
+
+			anyAllocatedSize = allocatedAnyList.size();
+			allAllocatedArray = (LibYarnResource_t *) realloc(preferredAllocatedArray,
+														sizeof(LibYarnResource_t) * (preferredAllocatedSize + anyAllocatedSize));
+			if(allAllocatedArray == NULL) {
+				setErrorMessage("LibYarnClientC::fail to re-allocate memory for resource array");
+				goto exit_part;
+			}
+			i = 0;
+			for (list<Container>::iterator it = allocatedAnyList.begin(); it != allocatedAnyList.end(); it++) {
+				allAllocatedArray[preferredAllocatedSize+i].containerId = it->getId().getId();
+				allAllocatedArray[preferredAllocatedSize+i].host = strdup(it->getNodeId().getHost().c_str());
+				allAllocatedArray[preferredAllocatedSize+i].port = it->getNodeId().getPort();
+				allAllocatedArray[preferredAllocatedSize+i].vCores = it->getResource().getVirtualCores();
+				allAllocatedArray[preferredAllocatedSize+i].memory = it->getResource().getMemory();
+				allAllocatedArray[preferredAllocatedSize+i].nodeHttpAddress = strdup(it->getNodeHttpAddress().c_str());
+				i++;
+			}
+
+			*allocatedResourcesArray = allAllocatedArray;
+			*allocatedResourceArraySize = preferredAllocatedSize + anyAllocatedSize;
+		}
+		else {
+			*allocatedResourcesArray = preferredAllocatedArray;
+			*allocatedResourceArraySize = preferredAllocatedSize;
+		}
+
+		preferredHostsList.clear();
+		return FUNCTION_SUCCEEDED;
+
+exit_part:
+		/*
+		 * The first allocation succeeds,
+		 * return containers allocated at first time.
+		 */
+		*allocatedResourcesArray = preferredAllocatedArray;
+		*allocatedResourceArraySize = preferredAllocatedSize;
+		preferredHostsList.clear();
+		return FUNCTION_SUCCEEDED;
+
+exit_err:
+		preferredHostsList.clear();
+		setErrorMessage(client->getErrorMessage());
+		return FUNCTION_FAILED;
 	}
 
 	int activeResources(LibYarnClient_t *client, char *jobId,int32_t activeContainerIds[],int activeContainerSize){
 		string jobIdStr(jobId);
 		int result = client->activeResources(jobIdStr,activeContainerIds,activeContainerSize);
 		if (result == FUNCTION_SUCCEEDED){
-				return FUNCTION_SUCCEEDED;
+			return FUNCTION_SUCCEEDED;
 		}else{
-				setErrorMessage(client->getErrorMessage());
-				return FUNCTION_FAILED;
+			setErrorMessage(client->getErrorMessage());
+			return FUNCTION_FAILED;
 		}
 	}
 
 	int releaseResources(LibYarnClient_t *client, char *jobId,int32_t releaseContainerIds[], int releaseContainerSize) {
 		string jobIdStr(jobId);
-		int result = client->releaseResources(jobIdStr, releaseContainerIds,
-				releaseContainerSize);
+		int result = client->releaseResources(jobIdStr, releaseContainerIds, releaseContainerSize);
 		if (result == FUNCTION_SUCCEEDED) {
 			return FUNCTION_SUCCEEDED;
 		} else {
@@ -244,8 +325,7 @@ extern "C" {
 
 	int finishJob(LibYarnClient_t *client, char *jobId,FinalApplicationStatus_t finalStatus) {
 		string jobIdStr(jobId);
-		int result = client->finishJob(jobIdStr,
-				(FinalApplicationStatus) finalStatus);
+		int result = client->finishJob(jobIdStr, (FinalApplicationStatus) finalStatus);
 		if (result == FUNCTION_SUCCEEDED) {
 			return FUNCTION_SUCCEEDED;
 		} else {
@@ -290,7 +370,7 @@ extern "C" {
 			(*applicationReport)->diagnostics = strdup(applicationReportCpp.getDiagnostics().c_str());
 			(*applicationReport)->startTime = applicationReportCpp.getStartTime();
 			return FUNCTION_SUCCEEDED;
-		}else{
+		} else{
 			setErrorMessage(client->getErrorMessage());
 			return FUNCTION_FAILED;
 		}

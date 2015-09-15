@@ -108,7 +108,7 @@ void SaslClient::initDigestMd5(const hadoop::common::RpcSaslProto_SaslAuth & aut
 
 std::string SaslClient::evaluateChallenge(const std::string & challenge) {
     int rc;
-    char * output;
+    char * output = NULL;
     size_t outputSize;
     std::string retval;
     rc = gsasl_step(session, &challenge[0], challenge.size(), &output,
@@ -117,6 +117,10 @@ std::string SaslClient::evaluateChallenge(const std::string & challenge) {
     if (rc == GSASL_NEEDS_MORE || rc == GSASL_OK) {
         retval.resize(outputSize);
         memcpy(&retval[0], output, outputSize);
+
+        if (output) {
+            free(output);
+        }
     } else {
         THROW(AccessControlException, "Failed to evaluate challenge: %s", gsasl_strerror(rc));
     }

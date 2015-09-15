@@ -97,6 +97,12 @@ typedef struct LibYarnNodeReport_t {
 	int64_t lastHealthReportTime;
 } LibYarnNodeReport_t;
 
+typedef struct LibYarnNodeInfo_t {
+	char *hostname;
+	char *rackname;
+	int32_t num_containers;  // number of containers on this host/rack
+} LibYarnNodeInfo_t;
+
 enum NodeState_t {
   NODE_STATE_NEW = 1,
   NODE_STATE_RUNNING = 2,
@@ -132,12 +138,15 @@ void deleteLibYarnClient(LibYarnClient_t *client);
 
 int createJob(LibYarnClient_t *client, char *jobName, char *queue,char **jobId);
 
+int addContainerRequest(LibYarnNodeInfo_t preferredHosts[], int preferredHostsSize,
+						int32_t priority, bool relax_locality);
+
 int allocateResources(LibYarnClient_t *client, char *jobId,
-				LibYarnResourceRequest_t *resRequest,
+				int32_t priority, int32_t vCores, int32_t memory, int32_t num_containers,
 				char *blackListAdditions[], int blacklistAddsSize,
 				char *blackListRemovals[], int blackListRemovalsSize,
-				LibYarnResource_t **allocatedResourcesArray, int *allocatedResourceArraySize,
-				int retryLimit);
+				LibYarnNodeInfo_t preferredHost[], int preferredHostSize,
+				LibYarnResource_t **allocatedResourcesArray, int *allocatedResourceArraySize);
 
 int activeResources(LibYarnClient_t *client, char *jobId,int32_t activeContainerIds[],int activeContainerSize);
 

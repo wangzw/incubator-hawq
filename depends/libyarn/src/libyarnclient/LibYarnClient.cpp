@@ -1,5 +1,5 @@
 #include <sstream>
-
+#include <list>
 #include "rpc/RpcAuth.h"
 #include "common/XmlConfig.h"
 #include "common/SessionConfig.h"
@@ -22,7 +22,7 @@ LibYarnClient::LibYarnClient(string &rmHost, string &rmPort,
 		int32_t amPort, string &am_tracking_url,int heartbeatInterval) :
 		schedHost(schedHost), schedPort(schedPort), amHost(amHost),
 		amPort(amPort), am_tracking_url(am_tracking_url),
-		heartbeatInterval(heartbeatInterval),clientJobId(""),response_id(1),
+		heartbeatInterval(heartbeatInterval),clientJobId(""),response_id(0),
 		keepRun(true){
         pthread_mutex_init( &(heartbeatLock), NULL );
 
@@ -64,6 +64,10 @@ void LibYarnClient::setErrorMessage(string errorMsg){
 
 bool LibYarnClient::isJobHealthy() {
 	return keepRun;
+}
+
+list<ResourceRequest> LibYarnClient::getAskRequests() {
+	return askRequests;
 }
 
 void* heartbeatFunc(void* args) {
@@ -184,17 +188,17 @@ int LibYarnClient::createJob(string &jobName, string &queue,string &jobId) {
     				clientAppId.getClusterTimestamp(), clientAppId.getId());
         clientJobId = jobId;
         return FR_SUCCEEDED;
-    } catch (const std::exception &e) {
-        stringstream errorMsg;
-        errorMsg << "LibYarnClient::createJob, catch exception:" << e.what();
-        setErrorMessage(errorMsg.str());
-        return FR_FAILED;
     } catch (const YarnNetworkConnectException &e) {
     	stringstream errorMsg;
 		errorMsg << "LibYarnClient::createJob, catch network connection exception:" << e.what();
 		setErrorMessage(errorMsg.str());
 		return FR_FAILED;
-	} catch (...) {
+	} catch (const std::exception &e) {
+        stringstream errorMsg;
+        errorMsg << "LibYarnClient::createJob, catch exception:" << e.what();
+        setErrorMessage(errorMsg.str());
+        return FR_FAILED;
+    } catch (...) {
     	stringstream errorMsg;
 		errorMsg << "LibYarnClient::createJob, catch unexpected exception.";
 		setErrorMessage(errorMsg.str());
@@ -215,15 +219,37 @@ void LibYarnClient::dummyAllocate() {
 	ResourceBlacklistRequest blacklistRequestBlank;
 	//4) progress
 	float progress = 0.5;
+	int allocatedNum = 0;
 
 	try {
+		LOG(INFO, "LibYarnClient::dummyAllocate, do a AM-RM heartbeat with response_id:%d", response_id);
 		AllocateResponse response = amrmClientAlias->allocate(asksBlank,
 															  releasesBlank,
 															  blacklistRequestBlank,
 															  response_id,
 															  progress);
 		response_id = response.getResponseId();
-		LOG(INFO, "LibYarnClient::dummyAllocate, do a AM-RM heartbeat with response_id:%d", response_id);
+		list<Container> allocatedContainers = response.getAllocatedContainers();
+		allocatedNum = allocatedContainers.size();
+		LOG(INFO,"LibYarnClient::dummyAllocate returned response_id :%d", response_id);
+		if (allocatedNum > 0) {
+			/*
+			 * In rare case, client gets allocated containers in heartbeat,
+			 * free them immediately.
+			 */
+			LOG(INFO, "LibYarnClient::dummyAllocate returned allocated size: %d, "
+					  "free them immediately.", allocatedNum);
+			list<ContainerId> releases;
+			for (list<Container>::iterator it = allocatedContainers.begin();
+				 it != allocatedContainers.end(); it++) {
+				releases.push_back((*it).getId());
+			}
+			list<ResourceRequest> asksBlank;
+			ResourceBlacklistRequest blacklistRequestBlank;
+			response = amrmClientAlias->allocate(asksBlank, releases,
+												 blacklistRequestBlank, response_id, progress);
+			response_id = response.getResponseId();
+		}
 		pthread_mutex_unlock(&heartbeatLock);
 	}
 	catch (const YarnException &e) {
@@ -232,6 +258,92 @@ void LibYarnClient::dummyAllocate() {
 					 e.msg());
 		pthread_mutex_unlock(&heartbeatLock);
 		throw;
+	}
+}
+
+void LibYarnClient::addResourceRequest(Resource capability,
+									  int32_t num_containers,
+									  string host,
+									  int32_t priority,
+									  bool relax_locality)
+{
+	ResourceRequest *req = new ResourceRequest();
+	req->setCapability(capability);
+	req->setNumContainers(num_containers);
+	Priority priorityProto;
+	priorityProto.setPriority(priority);
+	req->setPriority(priorityProto);
+	req->setResourceName(host);
+	req->setRelaxLocality(relax_locality);
+	try {
+		askRequests.push_back(*req);
+		LOG(INFO, "LibYarnClient::put a request into ask list, "
+				  "mem:%d, cpu:%d, priority:%d, resource name:%s, relax:%d, num_containers:%d",
+				  capability.getMemory(), capability.getVirtualCores(), priority, host.c_str(),
+				  relax_locality, num_containers);
+	} catch (std::exception &e) {
+		LOG(WARNING, "LibYarnClient::Fail to add a resource request "
+					 "to ask list. %s ", e.what());
+	}
+}
+
+/*
+ * This function creates resource requests according to the requirement of the caller, then put these
+ * requests into a list. The logic is a little similar to java client AMRMClient:addContainerRequest().
+ * There are three level nodes in YARN: off-switch(aka ANY), rack, host.By now, only ANY-level and host-level
+ * is supported.
+ *
+ * Parameters:
+ * 		jobId: jobId
+ * 		capability: the quota of the resource
+ * 		count: the required number of the containers
+ * 		preferred: node list, NULL means ANY host. If one node's rack name is NULL, a default rack name is set.
+ * 		priority: priority
+ */
+int LibYarnClient::addContainerRequests(string &jobId, Resource &capability, int32_t num_containers,
+									   list<LibYarnNodeInfo> &preferred, int32_t priority, bool relax_locality)
+{
+	if (jobId != clientJobId) {
+		throw std::invalid_argument("The jobId is wrong, check the jobId argument");
+	}
+
+	list<ResourceRequest> ask = this->getAskRequests();
+	map<string, int32_t> inferredRacks;
+
+	try {
+		for (list<LibYarnNodeInfo>::iterator iter = preferred.begin();
+				iter != preferred.end(); iter++) {
+			LOG(INFO, "LibYarnClient::addContainerRequests, "
+					  "get a preferred host info, host:%s,rack:%s,container number:%d",
+					  iter->getHost().c_str(), iter->getRack().c_str(), iter->getContainerNum());
+			/* add a resource request for this node */
+			addResourceRequest(capability, iter->getContainerNum(), iter->getHost(), priority, true);
+			map<string, int32_t>:: iterator it = inferredRacks.find(iter->getRack());
+			if (it != inferredRacks.end())
+				it->second += iter->getContainerNum();
+			else
+				inferredRacks.insert(make_pair(iter->getRack(), iter->getContainerNum()));
+		}
+
+		/* add resource requests for racks*/
+		for (map<string, int32_t>:: iterator it = inferredRacks.begin() ;
+			 it != inferredRacks.end(); it++)
+			addResourceRequest(capability, it->second, it->first, priority, relax_locality);
+
+		/* add resource request for off-switch */
+		addResourceRequest(capability, num_containers, YARN_HOST_ANY, priority, relax_locality);
+
+		return FR_SUCCEEDED;
+	} catch (std::exception &e) {
+    	stringstream errorMsg;
+    	errorMsg << "LibYarnClient::addContainerRequests catch std exception:" << e.what();
+        setErrorMessage(errorMsg.str());
+		return FR_FAILED;
+	} catch (...) {
+    	stringstream errorMsg;
+    	errorMsg << "LibYarnClient::addContainerRequests catch unexpected exception.";
+        setErrorMessage(errorMsg.str());
+		return FR_FAILED;
 	}
 }
 
@@ -257,12 +369,16 @@ repeated NMTokenProto nm_tokens = 9;
 }
 */
 int LibYarnClient::allocateResources(string &jobId,
-			ResourceRequest &resRequest,
 			list<string> &blackListAdditions,
 			list<string> &blackListRemovals,
             list<Container> &allocatedContainers,
-            int retryLimit) {
+            int32_t num_containers) {
     try{
+    	AllocateResponse response;
+    	int retry = 5;
+    	int allocatedNumOnce = 0;
+    	int allocatedNumTotal = 0;
+
         pthread_mutex_lock(&heartbeatLock);
 		if (jobId != clientJobId) {
 			throw std::invalid_argument("The jobId is wrong, check the jobId argument");
@@ -273,70 +389,62 @@ int LibYarnClient::allocateResources(string &jobId,
         list<ContainerReport> preContainerReports;
         preContainerReports = ((ApplicationClient*) appClient)->getContainers(clientAppAttempId);
 
-        int tmpNeedContainerNum = 0;
-        //1. allocate
-        //1.1) asks
-        list<ResourceRequest> asks;
-        ResourceRequest tmpResRequest = resRequest;
-        asks.push_back(tmpResRequest);
-        tmpNeedContainerNum = tmpResRequest.getNumContainers();
-        //1.2 releasesBlank
         list<ContainerId> releasesBlank;
-        //1.3 blacklistRequest
         ResourceBlacklistRequest blacklistRequest;
         blacklistRequest.setBlacklistAdditions(blackListAdditions);
         blacklistRequest.setBlacklistRemovals(blackListRemovals);
-        //1.4 progress
         float progress = 0.5;
-        LOG(INFO,"LibYarnClient::allocate, ask: request container num:%d",
-                tmpResRequest.getNumContainers());
+        list<ResourceRequest> ask = this->getAskRequests();
 
-        int retryCount = 0;
-        //The Retry limit
-        while ((tmpResRequest.getNumContainers() > 0)) {
+        LOG(INFO,"LibYarnClient::allocate, ask: container number:%d,", num_containers);
 
-            AllocateResponse response = amrmClientAlias->allocate(asks, releasesBlank,
-            								blacklistRequest, response_id, progress);
-            response_id = response.getResponseId();
-            LOG(INFO,"LibYarnClient::allocate, ask:  response_id:%d, allocated_container_size:%ld",
-                     response_id, response.getAllocatedContainers().size());
+		while (retry > 0) {
+			LOG(INFO,"LibYarnClient::allocate with response id : %d", response_id);
+			AllocateResponse response = amrmClientAlias->allocate(ask, releasesBlank,
+								blacklistRequest, response_id, progress);
+			response_id = response.getResponseId();
+			LOG(INFO,"LibYarnClient::allocate returned response id : %d", response_id);
+			list<NMToken> nmTokens =  response.getNMTokens();
+			for (list<NMToken>::iterator it = nmTokens.begin(); it != nmTokens.end(); it++) {
+				std::ostringstream oss;
+				oss << (*it).getNodeId().getHost() << ":" << (*it).getNodeId().getPort();
+				nmTokenCache[oss.str()] = (*it).getToken();
+			}
+			ask.clear();
+			list<Container> allocatedContainerOnce = response.getAllocatedContainers();
+			allocatedNumOnce = allocatedContainerOnce.size();
+			if (allocatedNumOnce <= 0) {
+				LOG(WARNING, "LibYarnClient:: fail to allocate from YARN RM, try again");
+				retry--;
+				if(retry == 0) {
+					/* If failed, just return to Resource Broker to handle*/
+					pthread_mutex_unlock(&heartbeatLock);
+					LOG(WARNING,"LibYarnClient:: fail to allocate from YARN RM after retry several times");
+					return FR_SUCCEEDED;
+				}
+			} else {
+				allocatedNumTotal += allocatedNumOnce;
+				allocatedContainerCache.insert(allocatedContainerCache.end(), allocatedContainerOnce.begin(), allocatedContainerOnce.end());
+				LOG(INFO, "LibYarnClient:: allocate %d containers from YARN RM", allocatedNumOnce);
+				if (allocatedNumTotal >= num_containers) {
+					LOG(INFO, "LibYarnClient:: allocate enough containers from YARN RM, "
+							  "expected:%d, total:%d", num_containers, allocatedNumTotal);
+					break;
+				}
 
-            //update the asks and totalNeedContainerNum
-            asks.clear();
-            int responseContainerNum = response.getAllocatedContainers().size();
-            tmpNeedContainerNum -= responseContainerNum;
-            //count the retry when can not allocate
-            if (responseContainerNum == 0){
-                retryCount += 1;
-            }else{
-                retryCount = 0;
-            }
-            if (retryCount >= retryLimit){
-                break;
-            }
-            tmpResRequest.setNumContainers(tmpNeedContainerNum);
-            LOG(INFO,"LibYarnClient::allocateResources, tmpNeedContainerNum:%d",tmpNeedContainerNum);
-            asks.push_back(tmpResRequest);
-            //store allocated containers in cache
-            list<Container> allocatedOnce = response.getAllocatedContainers();
-            allocatedContainerCache.insert(allocatedContainerCache.end(), allocatedOnce.begin(), allocatedOnce.end());
-            LOG(INFO,"LibYarnClient::allocateResources, allocatedContainerCache size:%d",
-                    allocatedContainerCache.size());
-            //store NM Token
-            list<NMToken> nmTokens =  response.getNMTokens();
-            for (list<NMToken>::iterator it = nmTokens.begin(); it != nmTokens.end(); it++) {
-                std::ostringstream oss;
-                oss << (*it).getNodeId().getHost() << ":" << (*it).getNodeId().getPort();
-                nmTokenCache[oss.str()] = (*it).getToken();
-            }
-            usleep(TimeInterval::ALLOCATE_INTERVAL_MS);
+			}
+			usleep(TimeInterval::ALLOCATE_INTERVAL_MS);
         }
 
+		LOG(INFO,"LibYarnClient::allocate, ask: response_id:%d, allocated container number:%ld",
+				 response_id, allocatedNumTotal);
+
+		/* a workaround for allocate more container than request */
         list<ContainerId> releases;
-        //a workaround for allocate more container than request
         list<ContainerReport> afterContainerReports;
         afterContainerReports = ((ApplicationClient*) appClient)->getContainers(clientAppAttempId);
-        for (list<ContainerReport>::iterator ait=afterContainerReports.begin();ait!=afterContainerReports.end();ait++){
+        for (list<ContainerReport>::iterator ait=afterContainerReports.begin();
+        		ait!=afterContainerReports.end(); ait++){
         	bool foundInPre = false;
         	for (list<ContainerReport>::iterator pit=preContainerReports.begin();pit!=preContainerReports.end();pit++){
 				if (pit->getId().getId() == ait->getId().getId()) {
@@ -358,47 +466,51 @@ int LibYarnClient::allocateResources(string &jobId,
         	}
         }
 
-        //2. release
-        int totalNeedRelease = allocatedContainerCache.size() - resRequest.getNumContainers();
+        int totalNeedRelease = allocatedContainerCache.size() - num_containers;
         LOG(INFO,"LibYarnClient::allocateResources, ask: finished: total_allocated_containers:%ld, total_need_release:%d",
                  allocatedContainerCache.size(), totalNeedRelease);
-        //2.1) asksBlank
-        list<ResourceRequest> asksBlank;
-        //2.2 to release
+        if(totalNeedRelease > 0) {
+			for (int i = 0; i < totalNeedRelease; i++) {
+				list<Container>::iterator it = allocatedContainerCache.begin();
+				releases.push_back((*it).getId());
+				allocatedContainerCache.erase(it);
+			}
 
-        for (int i = 0; i < totalNeedRelease; i++) {
-            list<Container>::iterator it = allocatedContainerCache.begin();
-            releases.push_back((*it).getId());
-            allocatedContainerCache.erase(it);
+			list<ResourceRequest> asksBlank;
+			ResourceBlacklistRequest blacklistRequestBlank;
+			response = amrmClientAlias->allocate(asksBlank, releases,
+					blacklistRequestBlank, response_id, progress);
+			response_id = response.getResponseId();
         }
-        //2.3) blacklistRequestBlank
-        ResourceBlacklistRequest blacklistRequestBlank;
-        AllocateResponse response = amrmClientAlias->allocate(asksBlank, releases,
-                blacklistRequestBlank, response_id, progress);
-        response_id = response.getResponseId();
-        /*LOG(INFO,"LibYarnClient::allocateResources, ask: after release extras: final_allocated_containers:%ld",
-                 allocatedContainerCache.size());*/
-        //3. store allocated containers
+
+        /* 3. store allocated containers */
         for(list<Container>::iterator it = allocatedContainerCache.begin();it != allocatedContainerCache.end();it++){
             Container *container = new Container((*it));
             int containerId = container->getId().getId();
             jobIdContainers[containerId] = container;
         }
         allocatedContainers = allocatedContainerCache;
+
         LOG(INFO,"LibYarnClient::allocateResources, put all allocated containers size:%ld",
                  allocatedContainerCache.size());
+
         pthread_mutex_unlock(&heartbeatLock);
+
         return FR_SUCCEEDED;
     } catch(std::exception &e) {
-        stringstream errorMsg;
-        errorMsg << "LibYarnClient::allocateResources, catch exception:" << e.what();
+
+    	stringstream errorMsg;
+    	errorMsg << "LibYarnClient::allocateResources, catch exception:" << e.what();
         setErrorMessage(errorMsg.str());
+
         pthread_mutex_unlock(&heartbeatLock);
         return FR_FAILED;
     } catch (...) {
+
     	stringstream errorMsg;
-		errorMsg << "LibYarnClient::allocateResources, catch unexpected exception.";
+    	errorMsg << "LibYarnClient::allocateResources, catch unexpected exception.";
 		setErrorMessage(errorMsg.str());
+
 		pthread_mutex_unlock(&heartbeatLock);
 		return FR_FAILED;
     }

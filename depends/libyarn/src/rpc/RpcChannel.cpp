@@ -114,6 +114,7 @@ const hadoop::common::RpcSaslProto_SaslAuth * RpcChannelImpl::createSaslClient(
 
     if (!auth) {
         std::stringstream ss;
+        ss.imbue(std::locale::classic());
         ss << "Client cannot authenticate via: ";
 
         for (int i = 0; i < auths->size(); ++i) {
@@ -230,18 +231,24 @@ RpcAuth RpcChannelImpl::setupSaslConnection() {
 }
 
 void RpcChannelImpl::connect() {
+    int sleep = 1;
     exception_ptr lastError;
     const RpcConfig & conf = key.getConf();
     const RpcServerInfo & server = key.getServer();
-    RpcAuth auth = key.getAuth();
 
     for (int i = 0; i < conf.getMaxRetryOnConnect(); ++i) {
+        RpcAuth auth = key.getAuth();
+
+        if (key.hasToken()) {
+            auth.setMethod(AuthMethod::TOKEN);
+        }
+
         try {
             while (true) {
                 sock->connect(server.getHost().c_str(), server.getPort().c_str(),
                               conf.getConnectTimeout());
                 sock->setNoDelay(conf.isTcpNoDelay());
-                sendConnectionHeader();
+                sendConnectionHeader(auth);
 
                 if (auth.getProtocol() == AuthProtocol::SASL) {
                     auth = setupSaslConnection();
@@ -266,12 +273,23 @@ void RpcChannelImpl::connect() {
             available = true;
             lastActivity = lastIdle = steady_clock::now();
             return;
+        } catch (const SaslException & e) {
+            /*
+             * Namenode may treat this connect as replay, retry later
+             */
+            sleep = (rand() % 5) + 1;
+            lastError = current_exception();
+            LOG(LOG_ERROR,
+                "Failed to setup RPC connection to \"%s:%s\" caused by:\n%s",
+                server.getHost().c_str(), server.getPort().c_str(), GetExceptionDetail(e));
         } catch (const YarnNetworkException & e) {
+            sleep = 1;
             lastError = current_exception();
             LOG(LOG_ERROR,
                 "Failed to setup RPC connection to \"%s:%s\" caused by:\n%s",
                 server.getHost().c_str(), server.getPort().c_str(), GetExceptionDetail(e));
         } catch (const YarnTimeoutException & e) {
+            sleep = 1;
             lastError = current_exception();
             LOG(LOG_ERROR,
                 "Failed to setup RPC connection to \"%s:%s\" caused by:\n%s",
@@ -286,7 +304,7 @@ void RpcChannelImpl::connect() {
 
         sock->close();
         CheckOperationCanceled();
-        sleep_for(seconds(1));
+        sleep_for(seconds(sleep));
     }
 
     rethrow_exception(lastError);
@@ -505,7 +523,6 @@ void RpcChannelImpl::cleanupPendingCalls(exception_ptr reason) {
 
 void RpcChannelImpl::checkOneResponse() {
     int ping = key.getConf().getPingTimeout();
-    int idle = key.getConf().getMaxIdleTime();
     int timeout = key.getConf().getRpcTimeout();
     steady_clock::time_point start = steady_clock::now();
 
@@ -569,8 +586,11 @@ bool RpcChannelImpl::checkIdle() {
             }
         } catch (...) {
             LOG(LOG_ERROR,
-                "Failed to send ping via idle RPC channel to server \"%s:%s\": \n%s",
-                key.getServer().getHost().c_str(), key.getServer().getPort().c_str(), GetExceptionDetail(current_exception()));
+                "Failed to send ping via idle RPC channel to server \"%s:%s\": "
+                "\n%s",
+                key.getServer().getHost().c_str(),
+                key.getServer().getPort().c_str(),
+                GetExceptionDetail(current_exception()));
             sock->close();
             return true;
         }
@@ -601,12 +621,12 @@ void RpcChannelImpl::waitForExit() {
  * |  AuthProtocol (1 byte)           |
  * +----------------------------------+
  */
-void RpcChannelImpl::sendConnectionHeader() {
+void RpcChannelImpl::sendConnectionHeader(const RpcAuth &auth) {
     WriteBuffer buffer;
     buffer.write(RPC_HEADER_MAGIC, strlen(RPC_HEADER_MAGIC));
     buffer.write(static_cast<char>(RPC_HEADER_VERSION));
     buffer.write(static_cast<char>(0));  //for future feature
-    buffer.write(static_cast<char>(key.getAuth().getProtocol()));
+    buffer.write(static_cast<char>(auth.getProtocol()));
     sock->writeFully(buffer.getBuffer(0), buffer.getDataSize(0),
                      key.getConf().getWriteTimeout());
 }

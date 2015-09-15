@@ -39,7 +39,7 @@ public:
         method(mech), user(ui) {
     }
 
-    char getProtocol() const {
+    AuthProtocol getProtocol() const {
         return method == SIMPLE ? AuthProtocol::NONE : AuthProtocol::SASL;
     }
 
@@ -57,6 +57,10 @@ public:
 
     AuthMethod getMethod() const {
         return method;
+    }
+
+    void setMethod(AuthMethod method) {
+        this->method = method;
     }
 
     size_t hash_value() const;

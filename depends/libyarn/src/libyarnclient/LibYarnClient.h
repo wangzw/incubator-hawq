@@ -39,9 +39,17 @@ namespace libyarn {
 
 		virtual int createJob(string &jobName, string &queue, string &jobId);
 
-		virtual int allocateResources(string &jobId, ResourceRequest &resRequest,
-				list<string> &blackListAdditions, list<string> &blackListRemovals,
-				list<Container> &allocatedContainers, int retryLimit);
+		virtual void addResourceRequest(Resource capability, int32_t num_containers,
+				   string host, int32_t priority, bool relax_locality);
+
+		virtual int addContainerRequests(string &jobId,
+										Resource &capability, int32_t num_containers,
+										list<struct LibYarnNodeInfo> &preferred,
+										int32_t priority, bool relax_locality);
+
+		virtual int allocateResources(string &jobId,
+									  list<string> &blackListAdditions, list<string> &blackListRemovals,
+									  list<Container> &allocatedContainers, int32_t num_containers);
 
 		virtual int activeResources(string &jobId, int activeContainerIds[],
 				int activeContainerSize);
@@ -73,6 +81,8 @@ namespace libyarn {
 		string getErrorMessage();
 
 		bool isJobHealthy();
+
+		list<ResourceRequest> getAskRequests();
 
 	private:
 		void dummyAllocate();
