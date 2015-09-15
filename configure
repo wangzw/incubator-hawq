@@ -1498,7 +1498,6 @@ build with coverage testing instrumentation
   --enable-snmp        enable snmp for MIB and alerts via TRAP/INFORM
   --enable-gphdfs        enables GPHDFS support
   --enable-email        enable email alerts
-  --enable-connectemc     enable connect emc support
   --enable-orca        enable Pivotal Query Optimizer
   --disable-thread-safety  Do not make client libraries thread-safe
   --enable-thread-safety-force  force thread-safety despite thread test failure
@@ -4649,7 +4648,12 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-# Get the Greenplum version string from ../VERSION
+# Generate HAWQ version file.
+if [ -x getversion ] ; then
+	./getversion > VERSION
+fi
+
+# Get the HAWQ version string from ./VERSION
 # If there is no VERSION file, set the version to devel
 if [ -f VERSION ] ; then
     HQ_VERSION=`cat VERSION`
@@ -5028,6 +5032,7 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: checking whether to build with email...$enable_email" >&5
 $as_echo "checking whether to build with email...$enable_email" >&6; }
+
 
 #
 # Enable Pivotal Query Optimizer

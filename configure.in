@@ -403,7 +403,12 @@ fi
 AC_PROG_CPP
 AC_SUBST(GCC)
 
-# Get the Greenplum version string from ../VERSION
+# Generate HAWQ version file.
+if [[ -x getversion ]] ; then
+	./getversion > VERSION
+fi
+
+# Get the HAWQ version string from ./VERSION
 # If there is no VERSION file, set the version to devel
 if [[ -f VERSION ]] ; then
     HQ_VERSION=`cat VERSION`
