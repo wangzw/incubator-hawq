@@ -50,8 +50,8 @@
 
 extern int	PostPortNumber;
 
-#if USE_EMAIL
-#if USE_SSL
+#ifdef USE_EMAIL
+#ifdef USE_SSL
 #include <openssl/ssl.h>
 #endif
 /* SASL (RFC 2222) client library API */
@@ -88,7 +88,7 @@ oid				objid_gpdbAlertSqlStmt[] = { 1, 3, 6, 1, 4, 1, 31327, 1, 5 };
 oid				objid_gpdbAlertSystemName[] = { 1, 3, 6, 1, 4, 1, 31327, 1, 6 };
 #endif
 
-#if USE_EMAIL
+#ifdef USE_EMAIL
 
 static char * get_str_from_chunk(CSVChunkStr *chunkstr,
 		const PipeProtoChunk *saved_chunks);
@@ -112,6 +112,7 @@ extern pg_time_t	MyStartTime;
 #endif
 
 
+#ifdef USE_EMAIL
 
 int send_alert_from_chunks(const PipeProtoChunk *chunk,
 		const PipeProtoChunk * saved_chunks_in)
@@ -201,6 +202,8 @@ int send_alert_from_chunks(const PipeProtoChunk *chunk,
 
 	return ret;
 }
+
+#endif
 
 #if USE_SNMP
 static int send_snmp_inform_or_trap(const GpErrorData * errorData, const char * subject, const char * severity)
@@ -536,7 +539,7 @@ static int send_snmp_inform_or_trap(const GpErrorData * errorData, const char * 
 }
 #endif
 
-#if USE_EMAIL
+#ifdef USE_EMAIL
 static int send_alert_via_email(const GpErrorData * errorData,
 		const char * subject, const char * email_priority)
 {
@@ -612,7 +615,7 @@ static int send_alert_via_email(const GpErrorData * errorData,
 
 	//smtp_message_reset_status(message);
 
-#if USE_SSL
+#ifdef USE_SSL
 	if (!smtp_starttls_enable(session, Starttls_ENABLED))
 		elog(LOG,"smtp_starttls_enable() failed");
 #endif
@@ -980,7 +983,7 @@ int send_alert(const GpErrorData * errorData)
 		elog(DEBUG4,"Not sending via SNMP");
 #endif
 
-#if USE_EMAIL
+#ifdef USE_EMAIL
 	if (send_via_email)
 	{
 		send_alert_via_email(errorData, subject, email_priority);
@@ -1117,7 +1120,7 @@ get_str_from_chunk(CSVChunkStr *chunkstr, const PipeProtoChunk *saved_chunks)
 	return out;
 }
 
-#if USE_EMAIL
+#ifdef USE_EMAIL
 
 /*
  *  The message is read a line at a time and the newlines converted
