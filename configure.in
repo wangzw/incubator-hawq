@@ -860,8 +860,9 @@ if test "$with_perl" = yes; then
   PGAC_CHECK_PERL_EMBED_LDFLAGS
 fi
 
+PGAC_PATH_PYTHON
+  
 if test "$with_python" = yes; then
-  PGAC_PATH_PYTHON
   PGAC_CHECK_PYTHON_EMBED_SETUP
 fi
 

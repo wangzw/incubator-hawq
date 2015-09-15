@@ -7159,8 +7159,7 @@ fi
 
 fi
 
-if test "$with_python" = yes; then
-  # Extract the first word of "python", so it can be a program name with args.
+# Extract the first word of "python", so it can be a program name with args.
 set dummy python; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
@@ -7204,6 +7203,8 @@ if test x"$PYTHON" = x""; then
   as_fn_error $? "Python not found" "$LINENO" 5
 fi
 
+
+if test "$with_python" = yes; then
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Python distutils module" >&5
 $as_echo_n "checking for Python distutils module... " >&6; }
