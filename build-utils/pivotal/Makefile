@@ -1113,7 +1113,7 @@ mkplatform:
 	#cp -p $(BLD_TOP)/tools/gpnetbench/gpnetbenchServer $(INSTLOC)/bin/lib
 	#cp -p $(BLD_TOP)/tools/gpnetbench/gpnetbenchClient $(INSTLOC)/bin/lib
 	mkdir -p $(INSTLOC)/etc
-	cp -p $(BLD_TOP)/tools/bin/gpcheck.cnf $(INSTLOC)/etc/
+	#cp -p $(BLD_TOP)/tools/bin/gpcheck.cnf $(INSTLOC)/etc/
 
 
 copydocs :
