@@ -759,6 +759,8 @@ listAllDbs(bool verbose)
 	if (verbose && pset.sversion >= 80000)
 		appendPQExpBuffer(&buf,
 		   "  JOIN pg_catalog.pg_tablespace t on d.dattablespace = t.oid\n");
+	/* Exclude database hcatalog since it's not an internal database */
+	appendPQExpBuffer(&buf, "WHERE d.datname <> 'hcatalog'\n");
 	appendPQExpBuffer(&buf, "ORDER BY 1;");
 	res = PSQLexec(buf.data, false);
 	termPQExpBuffer(&buf);
