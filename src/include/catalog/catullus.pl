@@ -201,8 +201,7 @@ my %array_type_exception_h =
 	 pg_proc => 1,
 	 pg_class => 1,
 	 smgr => 1,
-	 unknown => 1,
-	 nb_classification => 1
+	 unknown => 1
 	);
 
 sub doformat
@@ -1480,10 +1479,9 @@ sub make_type
 
 	my @deflist;
 
-	# treat bootstrap tables (and nb_classification) special
-	if (($h1{tuple}->{typname} =~ 
-		m/^pg\_(type|attribute|proc|class)$/) ||
-		($h1{tuple}->{typname} eq "nb_classification"))
+	# treat bootstrap tables special
+	if ($h1{tuple}->{typname} =~ 
+		m/^pg\_(type|attribute|proc|class)$/)
 	{
 		my %boottabdef = (
 			typnamespace => "PGNSP", # pg_catalog

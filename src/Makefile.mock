@@ -9,7 +9,6 @@ override CPPFLAGS+= -I$(top_srcdir)/src/backend/libpq \
 					-I$(top_srcdir)/src/backend/postmaster \
 					-I. -I$(top_builddir)/src/port -I$(CMOCKERY_DIR) \
 					-DDLSUFFIX=$(DLSUFFIX) \
-					-I$(top_srcdir)/src/backend/utils/stat \
 					-I$(top_srcdir)/src/include/resourcemanager \
 					-I$(top_srcdir)/src/backend/resourcemanager
 

@@ -1082,23 +1082,6 @@ Datum float8_pivot_accum(PG_FUNCTION_ARGS);
 Datum text_unpivot(PG_FUNCTION_ARGS);
 Datum unnest(PG_FUNCTION_ARGS);
 
-/* utils/stat/bayes.c */
-extern Datum nb_classify_accum(PG_FUNCTION_ARGS);
-extern Datum nb_classify_combine(PG_FUNCTION_ARGS);
-extern Datum nb_classify_final(PG_FUNCTION_ARGS);
-extern Datum nb_classify_probabilities(PG_FUNCTION_ARGS);
-
-/* utils/stat/regress.c */
-extern Datum float8_mregr_accum(PG_FUNCTION_ARGS);
-extern Datum float8_mregr_combine(PG_FUNCTION_ARGS);
-extern Datum float8_mregr_coef(PG_FUNCTION_ARGS);
-extern Datum float8_mregr_r2(PG_FUNCTION_ARGS);
-extern Datum float8_mregr_tstats(PG_FUNCTION_ARGS);
-extern Datum float8_mregr_pvalues(PG_FUNCTION_ARGS);
-
-/* utils/stat/pinv.c */
-Datum pseudoinverse(PG_FUNCTION_ARGS);
-
 /* cdb/cdbpersistentbuild.c */
 Datum gp_persistent_build_db(PG_FUNCTION_ARGS);
 Datum gp_persistent_build_all(PG_FUNCTION_ARGS);

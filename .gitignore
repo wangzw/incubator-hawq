@@ -34,6 +34,7 @@
 *.ko
 *.obj
 *.elf
+objfiles.txt
 
 # Eclipse Project
 .project

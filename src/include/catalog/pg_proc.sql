@@ -4546,43 +4546,6 @@
 
 -- 3241-324? reserved for unpivot, see pivot.c 
 
--- 3250 = nb_classification class 
--- 3251 = nb_classification type 
-
- CREATE FUNCTION nb_classify_accum(nb_classification, _text, int8, _int8, _int8) RETURNS nb_classification LANGUAGE internal IMMUTABLE AS 'nb_classify_accum' WITH (OID=3252);
-
- CREATE FUNCTION nb_classify_combine(nb_classification, nb_classification) RETURNS nb_classification LANGUAGE internal IMMUTABLE AS 'nb_classify_combine' WITH (OID=3253);
-
- CREATE FUNCTION nb_classify_final(nb_classification) RETURNS text LANGUAGE internal IMMUTABLE STRICT AS 'nb_classify_final' WITH (OID=3254);
-
- CREATE FUNCTION nb_classify(_text, int8, _int8, _int8) RETURNS text LANGUAGE internal IMMUTABLE AS 'aggregate_dummy' WITH (OID=3255, proisagg="t");
-
- CREATE FUNCTION nb_classify_probabilities(nb_classification) RETURNS _float8 LANGUAGE internal IMMUTABLE STRICT AS 'nb_classify_probabilities' WITH (OID=3267);
-
- CREATE FUNCTION nb_probabilities(_text, int8, _int8, _int8) RETURNS _float8 LANGUAGE internal IMMUTABLE AS 'aggregate_dummy' WITH (OID=3268, proisagg="t");
-
- CREATE FUNCTION pinv(_float8) RETURNS _float8 LANGUAGE internal IMMUTABLE STRICT AS 'pseudoinverse' WITH (OID=3256);
-
- CREATE FUNCTION float8_mregr_accum(_float8, float8, _float8) RETURNS _float8 LANGUAGE internal IMMUTABLE STRICT AS 'float8_mregr_accum' WITH (OID=3257);
-
- CREATE FUNCTION float8_mregr_combine(_float8, _float8) RETURNS _float8 LANGUAGE internal IMMUTABLE STRICT AS 'float8_mregr_combine' WITH (OID=3258);
-
- CREATE FUNCTION float8_mregr_coef(_float8) RETURNS _float8 LANGUAGE internal IMMUTABLE STRICT AS 'float8_mregr_coef' WITH (OID=3259);
-
- CREATE FUNCTION float8_mregr_r2(_float8) RETURNS float8 LANGUAGE internal IMMUTABLE STRICT AS 'float8_mregr_r2' WITH (OID=3260);
-
- CREATE FUNCTION mregr_coef(float8, _float8) RETURNS _float8 LANGUAGE internal IMMUTABLE STRICT AS 'aggregate_dummy' WITH (OID=3261, proisagg="t");
-
- CREATE FUNCTION mregr_r2(float8, _float8) RETURNS float8 LANGUAGE internal IMMUTABLE STRICT AS 'aggregate_dummy' WITH (OID=3262, proisagg="t");
-
- CREATE FUNCTION float8_mregr_tstats(_float8) RETURNS _float8 LANGUAGE internal IMMUTABLE STRICT AS 'float8_mregr_tstats' WITH (OID=3263);
-
- CREATE FUNCTION mregr_tstats(float8, _float8) RETURNS _float8 LANGUAGE internal IMMUTABLE AS 'aggregate_dummy' WITH (OID=3264, proisagg="t");
-
- CREATE FUNCTION float8_mregr_pvalues(_float8) RETURNS _float8 LANGUAGE internal IMMUTABLE STRICT AS 'float8_mregr_pvalues' WITH (OID=3265);
-
- CREATE FUNCTION mregr_pvalues(float8, _float8) RETURNS _float8 LANGUAGE internal IMMUTABLE AS 'aggregate_dummy' WITH (OID=3266, proisagg="t");
-
  CREATE FUNCTION gpaotidin(cstring) RETURNS gpaotid LANGUAGE internal IMMUTABLE STRICT AS 'gpaotidin' WITH (OID=3302, DESCRIPTION="I/O");
 
  CREATE FUNCTION gpaotidout(gpaotid) RETURNS cstring LANGUAGE internal IMMUTABLE STRICT AS 'gpaotidout' WITH (OID=3303, DESCRIPTION="I/O");

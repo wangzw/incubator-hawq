@@ -782,13 +782,6 @@ backend/utils/sort/tuplesort_mkheap.c
 backend/utils/sort/tuplesort_mkqsort.c
 backend/utils/sort/tuplestore.c
 backend/utils/sort/tuplestorenew.c
-backend/utils/stat/bayes.c
-backend/utils/stat/libgpla/gpla.c
-backend/utils/stat/pinv.c
-backend/utils/stat/pinv.h
-backend/utils/stat/regress.c
-backend/utils/stat/student.c
-backend/utils/stat/student.h
 backend/utils/time/combocid.c
 backend/utils/time/tqual.c
 backend/utils/workfile_manager/workfile_diskspace.c

@@ -8788,59 +8788,6 @@ DATA(insert OID = 3240 ( unnest  PGNSP PGUID 12 f f t t i 1 2283 f "2277" _null_
 
 /* 3241-324? reserved for unpivot, see pivot.c  */
 
-/* 3250 = nb_classification class  */
-/* 3251 = nb_classification type  */
-/* nb_classify_accum(nb_classification, _text, int8, _int8, _int8) => nb_classification */ 
-DATA(insert OID = 3252 ( nb_classify_accum  PGNSP PGUID 12 f f f f i 5 3251 f "3251 1009 20 1016 1016" _null_ _null_ _null_ nb_classify_accum - _null_ n ));
-
-/* nb_classify_combine(nb_classification, nb_classification) => nb_classification */ 
-DATA(insert OID = 3253 ( nb_classify_combine  PGNSP PGUID 12 f f f f i 2 3251 f "3251 3251" _null_ _null_ _null_ nb_classify_combine - _null_ n ));
-
-/* nb_classify_final(nb_classification) => text */ 
-DATA(insert OID = 3254 ( nb_classify_final  PGNSP PGUID 12 f f t f i 1 25 f "3251" _null_ _null_ _null_ nb_classify_final - _null_ n ));
-
-/* nb_classify(_text, int8, _int8, _int8) => text */ 
-DATA(insert OID = 3255 ( nb_classify  PGNSP PGUID 12 t f f f i 4 25 f "1009 20 1016 1016" _null_ _null_ _null_ aggregate_dummy - _null_ n ));
-
-/* nb_classify_probabilities(nb_classification) => _float8 */ 
-DATA(insert OID = 3267 ( nb_classify_probabilities  PGNSP PGUID 12 f f t f i 1 1022 f "3251" _null_ _null_ _null_ nb_classify_probabilities - _null_ n ));
-
-/* nb_probabilities(_text, int8, _int8, _int8) => _float8 */ 
-DATA(insert OID = 3268 ( nb_probabilities  PGNSP PGUID 12 t f f f i 4 1022 f "1009 20 1016 1016" _null_ _null_ _null_ aggregate_dummy - _null_ n ));
-
-/* pinv(_float8) => _float8 */ 
-DATA(insert OID = 3256 ( pinv  PGNSP PGUID 12 f f t f i 1 1022 f "1022" _null_ _null_ _null_ pseudoinverse - _null_ n ));
-
-/* float8_mregr_accum(_float8, float8, _float8) => _float8 */ 
-DATA(insert OID = 3257 ( float8_mregr_accum  PGNSP PGUID 12 f f t f i 3 1022 f "1022 701 1022" _null_ _null_ _null_ float8_mregr_accum - _null_ n ));
-
-/* float8_mregr_combine(_float8, _float8) => _float8 */ 
-DATA(insert OID = 3258 ( float8_mregr_combine  PGNSP PGUID 12 f f t f i 2 1022 f "1022 1022" _null_ _null_ _null_ float8_mregr_combine - _null_ n ));
-
-/* float8_mregr_coef(_float8) => _float8 */ 
-DATA(insert OID = 3259 ( float8_mregr_coef  PGNSP PGUID 12 f f t f i 1 1022 f "1022" _null_ _null_ _null_ float8_mregr_coef - _null_ n ));
-
-/* float8_mregr_r2(_float8) => float8 */ 
-DATA(insert OID = 3260 ( float8_mregr_r2  PGNSP PGUID 12 f f t f i 1 701 f "1022" _null_ _null_ _null_ float8_mregr_r2 - _null_ n ));
-
-/* mregr_coef(float8, _float8) => _float8 */ 
-DATA(insert OID = 3261 ( mregr_coef  PGNSP PGUID 12 t f t f i 2 1022 f "701 1022" _null_ _null_ _null_ aggregate_dummy - _null_ n ));
-
-/* mregr_r2(float8, _float8) => float8 */ 
-DATA(insert OID = 3262 ( mregr_r2  PGNSP PGUID 12 t f t f i 2 701 f "701 1022" _null_ _null_ _null_ aggregate_dummy - _null_ n ));
-
-/* float8_mregr_tstats(_float8) => _float8 */ 
-DATA(insert OID = 3263 ( float8_mregr_tstats  PGNSP PGUID 12 f f t f i 1 1022 f "1022" _null_ _null_ _null_ float8_mregr_tstats - _null_ n ));
-
-/* mregr_tstats(float8, _float8) => _float8 */ 
-DATA(insert OID = 3264 ( mregr_tstats  PGNSP PGUID 12 t f f f i 2 1022 f "701 1022" _null_ _null_ _null_ aggregate_dummy - _null_ n ));
-
-/* float8_mregr_pvalues(_float8) => _float8 */ 
-DATA(insert OID = 3265 ( float8_mregr_pvalues  PGNSP PGUID 12 f f t f i 1 1022 f "1022" _null_ _null_ _null_ float8_mregr_pvalues - _null_ n ));
-
-/* mregr_pvalues(float8, _float8) => _float8 */ 
-DATA(insert OID = 3266 ( mregr_pvalues  PGNSP PGUID 12 t f f f i 2 1022 f "701 1022" _null_ _null_ _null_ aggregate_dummy - _null_ n ));
-
 /* gpaotidin(cstring) => gpaotid */ 
 DATA(insert OID = 3302 ( gpaotidin  PGNSP PGUID 12 f f t f i 1 3300 f "2275" _null_ _null_ _null_ gpaotidin - _null_ n ));
 DESCR("I/O");
