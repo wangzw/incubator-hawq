@@ -16,6 +16,7 @@ all:
 	$(MAKE) -C contrib/gp_sparse_vector all
 #	$(MAKE) -C contrib/hawq-hadoop all
 	$(MAKE) -C contrib/gp_mdver all
+	$(MAKE) -C tools all
 	@echo "All of HAWQ successfully made. Ready to install."
 
 install: 
@@ -55,6 +56,7 @@ clean:
 	$(MAKE) -C contrib/gp_sparse_vector $@
 #	$(MAKE) -C contrib/hawq-hadoop $@
 	$(MAKE) -C contrib/gp_mdver $@	
+	$(MAKE) -C tools $@
 # Garbage from autoconf:
 	@rm -rf autom4te.cache/
 
@@ -64,6 +66,7 @@ distclean maintainer-clean:
 #	-$(MAKE) -C doc $@
 	-$(MAKE) -C contrib $@
 	-$(MAKE) -C config $@
+	-$(MAKE) -C tools $@
 	-$(MAKE) -C src $@
 	-rm -f config.cache config.log config.status GNUmakefile
 # Garbage from autoconf:

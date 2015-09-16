@@ -14,9 +14,6 @@ subdir = src/backend
 top_builddir = ../..
 include $(top_builddir)/src/Makefile.global
 
-BLD_TOP = $(top_builddir)
-include $(top_builddir)/build-utils/pivotal/releng.mk
-
 SUBDIRS = access bootstrap catalog parser commands executor foreign \
 	lib libpq gp_libpq_fe main nodes optimizer port postmaster regex \
 	rewrite storage tcop utils resourcemanager $(top_builddir)/src/timezone cdb

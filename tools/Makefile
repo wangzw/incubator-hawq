@@ -8,11 +8,17 @@ subdir = tools
 top_builddir = ..
 include $(top_builddir)/src/Makefile.global
 
-install :
+all :
+	${MAKE} -C bin all
+
+install : all
 	${MAKE} -C bin $@
 	${MAKE} -C sbin $@
 	${MAKE} -C doc $@
 	${MAKE} set_scripts_version
+
+clean distclean:
+	${MAKE} -C bin $@
 
 #---------------------------------------------------------------------
 # Set Version

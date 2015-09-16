@@ -1,11 +1,6 @@
 # prevent included makefiles from stealing default target
 default: all
 
-BLD_TOP=../../..
-
-include $(BLD_TOP)/build-utils/pivotal/Makefile.global
-include $(BLD_TOP)/build-utils/pivotal/Makefile.thirdparty
-
 subdir = src/bin/gpfdist
 top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
@@ -70,7 +65,9 @@ endif
 osx105_x86_GPFDIST_LDFLAGS=-Wl,-search_paths_first
 GPFDIST_LDFLAGS=$($(BLD_ARCH)_GPFDIST_LDFLAGS)
 
-all: mkdir mkgpfdist
+all: 
+
+#mkdir mkgpfdist
 
 #mkgpma mkgp 
 

@@ -13,7 +13,6 @@
 subdir = src/test/regress
 top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
-include $(top_builddir)/build-utils/pivotal/releng.mk
 
 contribdir = $(top_builddir)/contrib
 
