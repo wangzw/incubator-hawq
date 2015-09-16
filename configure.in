@@ -1163,6 +1163,19 @@ fi
 AC_CHECK_HEADERS(json/json.h, [], [AC_MSG_ERROR([json-c is required])])
 AC_SEARCH_LIBS(json_tokener_parse, json, [], [AC_MSG_ERROR([json-c is required])], [])
 
+
+# libhdfs3 
+
+AC_CHECK_HEADERS(hdfs/hdfs.h, [], [AC_MSG_ERROR([libhdfs3 is required])])
+AC_SEARCH_LIBS(hdfsOpenFile, hdfs3, [], [AC_MSG_ERROR([libhdfs3 is required])], [])
+
+
+# libyarn 
+
+AC_CHECK_HEADERS(libyarn/LibYarnClientC.h, [], [AC_MSG_ERROR([libyarn is required])])
+AC_SEARCH_LIBS(newLibYarnClient, yarn, [], [AC_MSG_ERROR([libyarn is required])], [])
+
+
 ##
 ## Types, structures, compiler characteristics
 ##
