@@ -423,8 +423,8 @@ define BUILD_STEPS
 	if [ "$(findstring win,$(BLD_ARCH))" != "win" ]; then \
 	  cd $(BUILDDIR)/src/bin/gpmapreduce/ && $(MAKE) install ; \
 	fi
-	cd $(GPFDIST) && $(MAKE) mkgpfdist
-	cp -p $(GPFDIST)/build/bin/gpfdist$(EXE_EXT) $(INSTLOC)/bin/
+	#cd $(GPFDIST) && $(MAKE) mkgpfdist
+	#cp -p $(GPFDIST)/build/bin/gpfdist$(EXE_EXT) $(INSTLOC)/bin/
 	cp -p $(GPMGMT)/bin/gpload $(INSTLOC)/bin/gpload
 	cp -p $(GPMGMT)/bin/gpload.py $(INSTLOC)/bin/gpload.py
 	$(MAKE) copylibs INSTLOC=$(INSTLOC)
@@ -1094,7 +1094,7 @@ groupSession:
 	@cd $(GPMGMT)/bin && $(MAKE)
 
 mkgpfdist:
-	@cd $(GPFDIST) && $(MAKE) OPT="$(INSTCFLAGS)"
+#	@cd $(GPFDIST) && $(MAKE) OPT="$(INSTCFLAGS)"
 
 #mkgpperfmon:
 #	@cd $(GPPERFMON) && $(MAKE) BUILDDIR=$(BUILDDIR)
@@ -1149,7 +1149,7 @@ ifeq "$(findstring $(BLD_ARCH),$(GPPKG_PLATFORMS))" ""
 	rm -f $(INSTLOC)/bin/gppkg
 endif
 	cp -rp $(GPMGMT)/sbin/* $(INSTLOC)/sbin/.
-	cp -rp $(GPFDIST)/build/bin $(INSTLOC)
+	#cp -rp $(GPFDIST)/build/bin $(INSTLOC)
 	cp $(BLD_TOP)/src/test/regress/*.pl $(INSTLOC)/bin
 	if [ ! -d ${INSTLOC}/docs ] ; then mkdir ${INSTLOC}/docs ; fi
 	if [ -d $(GPMGMT)/doc ]; then cp -rp $(GPMGMT)/doc $(INSTLOC)/docs/cli_help; fi
