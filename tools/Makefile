@@ -8,10 +8,7 @@ subdir = tools
 top_builddir = ..
 include $(top_builddir)/src/Makefile.global
 
-all :
-	${MAKE} -C bin all
-
-install : all
+install :
 	${MAKE} -C bin $@
 	${MAKE} -C sbin $@
 	${MAKE} -C doc $@
