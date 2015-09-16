@@ -87,66 +87,6 @@ sub mkvcbuild
     $plpgsql->AddLibrary('wsock32.lib');
     $plpgsql->AddLibrary('ws2_32.lib');
 
-    if ($solution->{options}->{perl})
-    {
-        my $plperlsrc = "src\\pl\\plperl\\";
-        my $plperl = $solution->AddProject('plperl','dll','PLs','src\pl\plperl');
-        $plperl->AddIncludeDir($solution->{options}->{perl} . '/lib/CORE');
-        $plperl->AddDefine('PLPERL_HAVE_UID_GID');
-        foreach my $xs ('SPI.xs', 'Util.xs')
-        {
-            (my $xsc = $xs) =~ s/\.xs/.c/;
-            if (Solution::IsNewer("$plperlsrc$xsc","$plperlsrc$xs"))
-            {
-                print "Building $plperlsrc$xsc...\n";
-            system( $solution->{options}->{perl}
-                  . '/bin/perl '
-                  . $solution->{options}->{perl}
-                  . '/lib/ExtUtils/xsubpp -typemap '
-                  . $solution->{options}->{perl}
-                      . '/lib/ExtUtils/typemap '
-                      . "$plperlsrc$xs "
-                      . ">$plperlsrc$xsc");
-                if ((!(-f "$plperlsrc$xsc")) || -z "$plperlsrc$xsc")
-            {
-                    unlink("$plperlsrc$xsc"); # if zero size
-                    die "Failed to create $xsc.\n";
-                }
-            }
-        }
-        if (  Solution::IsNewer('src\pl\plperl\perlchunks.h','src\pl\plperl\plc_perlboot.pl')
-            ||Solution::IsNewer('src\pl\plperl\perlchunks.h','src\pl\plperl\plc_safe_bad.pl')
-            ||Solution::IsNewer('src\pl\plperl\perlchunks.h','src\pl\plperl\plc_safe_ok.pl'))
-        {
-            print 'Building src\pl\plperl\perlchunks.h ...' . "\n";
-            my $basedir = getcwd;
-            chdir 'src\pl\plperl';
-            system( $solution->{options}->{perl}
-                  . '/bin/perl '
-                  . 'text2macro.pl '
-                  . '--strip="^(\#.*|\s*)$$" '
-                  . 'plc_perlboot.pl plc_safe_bad.pl plc_safe_ok.pl '
-                  .	'>perlchunks.h');
-            chdir $basedir;
-            if ((!(-f 'src\pl\plperl\perlchunks.h')) || -z 'src\pl\plperl\perlchunks.h')
-            {
-                unlink('src\pl\plperl\perlchunks.h'); # if zero size
-                die 'Failed to create perlchunks.h' . "\n";
-            }
-        }
-        $plperl->AddReference($postgres);
-        my @perl_libs =
-          grep {/perl\d+.lib$/ }glob($solution->{options}->{perl} . '\lib\CORE\perl*.lib');
-        if (@perl_libs == 1)
-        {
-            $plperl->AddLibrary($perl_libs[0]);
-        }
-        else
-        {
-			die "could not identify perl library version";
-        }
-    }
-
     if ($solution->{options}->{python})
     {
 

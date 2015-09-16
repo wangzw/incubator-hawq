@@ -43,10 +43,8 @@ setup:
 	@printf "============== dropping database \"$(DB)\"     ==============\n"
 	@psql -X -c "drop database $(DB)" template1 2>/dev/null || echo "DROP DATABASE"
 	@printf "============== creating database \"$(DB)\"     ==============\n"
+	@printf "============== installing plpython             ==============\n"
 	@psql -X -c "create database $(DB)" template1
-	@printf "============== installing plperl/plpython             ==============\n"
-	@psql -X -c "create language plperl" -d $(DB) 
-	@psql -X -c "create language plperlu" -d $(DB) 
 	@psql -X -c "create language plpythonu" -d $(DB) 
 	@printf "============== running mapreduce tests                ==============\n"
 	@rm -rf $(OUTDIR)

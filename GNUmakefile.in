@@ -97,7 +97,7 @@ $(distdir).tar: distdir
 
 opt_files = \
 	src/tools src/tutorial \
-	$(addprefix src/pl/, plperl plpython tcl)
+	$(addprefix src/pl/, plpython tcl)
 
 #docs_files = doc/postgres.tar.gz doc/src doc/TODO.detail
 docs_files :=

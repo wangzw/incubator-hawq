@@ -286,7 +286,7 @@ unsetBuildDbPath() {
 
 compileSource() {
     if [ "${TEST_ARCH}" = "SOL-x86_64" ] || [ "${TEST_ARCH}" = "Linux-x86_64" ] ; then
-        echo `date` "Setting up path to build plperl and plpython"
+        echo `date` "Setting up path to build plpython"
         PYTHON_VER="2.5.1"
         PERL_VER="5.8.8"
         echo "PATH=/opt/perl-${PERL_VER}/bin:/opt/python-${PYTHON_VER}/bin:${PATH}"

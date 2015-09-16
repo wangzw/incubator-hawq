@@ -14,10 +14,6 @@ include $(top_builddir)/src/Makefile.global
 
 DIRS = plpgsql
 
-ifeq ($(with_perl), yes)
-DIRS += plperl
-endif
-
 ifeq ($(with_python), yes)
 DIRS += plpython
 endif

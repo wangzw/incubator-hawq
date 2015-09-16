@@ -1492,7 +1492,6 @@ authlibs:
 
 ifeq "$(BLD_ARCH)" "rhel6_x86_64"
 GPPKG_SOURCES = \
-	src/pl/plperl \
 	$(NULL)
 else
 GPPKG_SOURCES = \
@@ -1500,7 +1499,6 @@ GPPKG_SOURCES = \
 	src/pl/pljava \
     $(NULL)
 	#contrib/postgis \
-	#src/pl/plperl \
 	#$(NULL)
 endif
 
@@ -1529,7 +1527,6 @@ endif
 
 INSTALLCHECK_GPPKG_SOURCES = \
 	contrib/pgcrypto \
-	src/pl/plperl \
 	$(NULL)
 
 installcheck-gppkg:
