@@ -1006,6 +1006,16 @@ LIBS="$LIBS $CURL_LIBS"
 AC_CHECK_HEADERS(bzlib.h, [], [AC_MSG_ERROR([bzip2-devel is required])])
 AC_SEARCH_LIBS(BZ2_bzDecompress, bz2, [], [AC_MSG_ERROR([bzip2-devel is required])])
 
+AC_LANG_PUSH([C++])
+
+# Check for thrift
+AC_CHECK_HEADERS(thrift/protocol/TBinaryProtocol.h, [], [AC_MSG_ERROR([thrift is required])])
+
+# Check for boost
+AC_CHECK_HEADERS(boost/chrono.hpp, [], [AC_MSG_ERROR([boost is required])])
+
+AC_LANG_POP([C++])
+
 # Check for libyaml
 AC_CHECK_HEADERS(yaml.h, [], [AC_MSG_ERROR([libyaml is required])])
 AC_SEARCH_LIBS(yaml_get_version, -lyaml, [], [AC_MSG_ERROR([libyaml is required])])
