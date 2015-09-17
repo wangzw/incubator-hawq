@@ -73,10 +73,9 @@ EOF
     fi
 fi
 
-#setup PYTHONPATH & PYTHONHOME
+#setup PYTHONPATH
 cat <<EOF
-PYTHONPATH=\$GPHOME/lib/python
-PYTHONHOME=\$GPHOME/ext/python
+PYTHONPATH=\$GPHOME/lib/python:\$PYTHONPATH
 EOF
 
 # openssl configuration file path
@@ -112,7 +111,6 @@ fi
 
 cat <<EOF
 export PYTHONPATH
-export PYTHONHOME
 EOF
 
 cat <<EOF
