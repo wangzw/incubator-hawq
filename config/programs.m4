@@ -225,3 +225,22 @@ AC_DEFUN([PGAC_CHECK_STRIP],
   AC_SUBST(STRIP_STATIC_LIB)
   AC_SUBST(STRIP_SHARED_LIB)
 ])# PGAC_CHECK_STRIP
+
+# PGAC_PATH_GPERF
+# ---------------
+# Look for gperf, set the output variable GPERF to its path if found.
+
+AC_DEFUN([PGAC_PATH_GPERF],
+[# Let the user override the search
+if test -z "$GPERF"; then
+  AC_PATH_PROGS(GPERF, gperf)
+fi
+
+if test -z "$GPERF"; then
+  AC_MSG_ERROR([
+*** Without gperf you will not be able to build HAWQ.  You can obtain gperf from
+*** a GNU mirror site.])
+fi
+# We don't need AC_SUBST(GPERF) because AC_PATH_PROG did it
+AC_SUBST(GPERFFLAGS)
+])# PGAC_PATH_GPERF
