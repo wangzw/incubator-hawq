@@ -1018,11 +1018,11 @@ AC_LANG_POP([C++])
 
 # Check for libyaml
 AC_CHECK_HEADERS(yaml.h, [], [AC_MSG_ERROR([libyaml is required])])
-AC_SEARCH_LIBS(yaml_get_version, -lyaml, [], [AC_MSG_ERROR([libyaml is required])])
+AC_SEARCH_LIBS(yaml_get_version, yaml, [], [AC_MSG_ERROR([libyaml is required])])
 
 # Check for libevent
 AC_CHECK_HEADERS(event.h, [], [AC_MSG_ERROR([libevent is required])])
-AC_SEARCH_LIBS(event_init, -levent, [], [AC_MSG_ERROR([libevent is required])])
+AC_SEARCH_LIBS(event_init, event, [], [AC_MSG_ERROR([libevent is required])])
 
 # Check for sigar
 AC_SEARCH_LIBS(sigar_open, sigar)

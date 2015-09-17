@@ -9959,7 +9959,7 @@ return yaml_get_version ();
   return 0;
 }
 _ACEOF
-for ac_lib in '' -lyaml; do
+for ac_lib in '' yaml; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
@@ -10033,7 +10033,7 @@ return event_init ();
   return 0;
 }
 _ACEOF
-for ac_lib in '' -levent; do
+for ac_lib in '' event; do
   if test -z "$ac_lib"; then
     ac_res="none required"
   else
