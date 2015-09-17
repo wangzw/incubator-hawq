@@ -1003,6 +1003,7 @@ CFLAGS="$CFLAGS $CURL_CFLAGS"
 LIBS="$LIBS $CURL_LIBS"
 
 # Check for bzip2
+AC_CHECK_HEADERS(bzlib.h, [], [AC_MSG_ERROR([bzip2-devel is required])])
 AC_SEARCH_LIBS(BZ2_bzDecompress, bz2)
 
 # Check for sigar
