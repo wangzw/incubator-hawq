@@ -673,6 +673,9 @@
 /* Define to 1 if you have the <winldap.h> header file. */
 #undef HAVE_WINLDAP_H
 
+/* Define to 1 if you have the <yaml.h> header file. */
+#undef HAVE_YAML_H
+
 /* HAWQ major version as a string */
 #undef HQ_MAJORVERSION
 

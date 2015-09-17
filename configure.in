@@ -1006,6 +1006,10 @@ LIBS="$LIBS $CURL_LIBS"
 AC_CHECK_HEADERS(bzlib.h, [], [AC_MSG_ERROR([bzip2-devel is required])])
 AC_SEARCH_LIBS(BZ2_bzDecompress, bz2)
 
+# Check for libyaml
+AC_CHECK_HEADERS(yaml.h, [], [AC_MSG_ERROR([libyaml is required])])
+AC_SEARCH_LIBS(yaml_get_version, -lyaml)
+
 # Check for sigar
 AC_SEARCH_LIBS(sigar_open, sigar)
 
