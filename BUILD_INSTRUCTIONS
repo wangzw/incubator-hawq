@@ -20,6 +20,7 @@ zlib-devel		1.2.3
 bzip2-devel		1.0.5
 readline-devel	6.0
 libevent-devel	1.4.6
+LibYAML			0.1.1
 boost			1.55
 snappy			1.1.1
 thrift			0.9.1
