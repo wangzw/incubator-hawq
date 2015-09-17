@@ -1,3 +1,0 @@
-bin/gpdebug
-bin/gpverify
-lib/postgresql/gp_ao_co_diagnostics.so
