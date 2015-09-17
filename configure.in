@@ -1006,6 +1006,10 @@ LIBS="$LIBS $CURL_LIBS"
 AC_CHECK_HEADERS(bzlib.h, [], [AC_MSG_ERROR([bzip2-devel is required])])
 AC_SEARCH_LIBS(BZ2_bzDecompress, bz2, [], [AC_MSG_ERROR([bzip2-devel is required])])
 
+# Check for snappy
+AC_CHECK_HEADERS(snappy-c.h, [], [AC_MSG_ERROR([snappy is required])])
+AC_SEARCH_LIBS(snappy_max_compressed_length, snappy, [], [AC_MSG_ERROR([snappy is required])])
+
 AC_LANG_PUSH([C++])
 
 # Check for thrift
