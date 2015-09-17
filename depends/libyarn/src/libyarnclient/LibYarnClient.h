@@ -116,6 +116,7 @@ namespace libyarn {
 		map<int, Container*> jobIdContainers;
 		map<string, Token> nmTokenCache;
 		set<int> activeFailContainerIds;
+		list<ResourceRequest> askRequests;
 
 		volatile bool keepRun;
 #ifdef MOCKTEST
@@ -125,6 +126,23 @@ namespace libyarn {
      */
 	Mock::TestLibYarnClientStub* libyarnStub;
 #endif
+	};
+
+	class LibYarnNodeInfo {
+		public:
+			LibYarnNodeInfo(char *host, char* rack, int32_t cnt)
+							:hostname(host), num_containers(cnt)
+			{ if(rack == NULL) rackname = DEFAULT_RACK; else rackname = string(rack);}
+
+			string getHost() { return hostname; }
+			string getRack() { return rackname; }
+			int32_t getContainerNum() { return num_containers; }
+			void setContainerNum(int32_t num) { num_containers = num; }
+
+		protected:
+			string  hostname;
+			string  rackname;
+			int32_t num_containers;
 	};
 }
 #endif /* LIBYARNCLIENT_H_ */
