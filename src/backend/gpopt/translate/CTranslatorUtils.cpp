@@ -352,7 +352,7 @@ CTranslatorUtils::PmdidWithVersion
 	}
 	else
 	{
-		gpdb::MdVerRequestVersion(oidObj, &ullDDLv, &ullDMLv);
+		gpdb::MdVerRequestVersion(oidObj, (uint64*)&ullDDLv, (uint64*)&ullDMLv);
 	}
 
 	// TODO: gcaragea - Feb 6, 2015; Refactor CMDIdGPDB to eliminate need for casting

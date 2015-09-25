@@ -623,6 +623,10 @@ crc32cHardware64(pg_crc32 crc, const void* data, int length)
 
 #include <cpuid.h>
 
+#ifndef bit_SSE4_2
+#define bit_SSE4_2 bit_SSE42
+#endif
+
 /*
  * Detect if we have new Intel CPU instructions
  * This gets called the first time someone tries to use crc32c.
